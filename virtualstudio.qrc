@@ -1,0 +1,45 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/add.png</file>
+        <file>images/camera.png</file>
+        <file>images/clothes.png</file>
+        <file>images/exit.png</file>
+        <file>images/import_avatar.png</file>
+        <file>images/import_pattern.png</file>
+        <file>images/open.png</file>
+        <file>images/pan.png</file>
+        <file>images/rotate.png</file>
+        <file>images/save.png</file>
+        <file>images/select.png</file>
+        <file>images/shading.png</file>
+        <file>images/shading_wireframe.png</file>
+        <file>images/wireframe.png</file>
+        <file>images/zoom.png</file>
+        <file>images/control_end_blue.png</file>
+        <file>images/control_fastforward_blue.png</file>
+        <file>images/control_pause_blue.png</file>
+        <file>images/control_play_blue.png</file>
+        <file>images/control_repeat_blue.png</file>
+        <file>images/control_rewind_blue.png</file>
+        <file>images/control_start_blue.png</file>
+        <file>images/arrow_down.png</file>
+        <file>images/arrow_up.png</file>
+        <file>images/cross.png</file>
+        <file>images/bindpose.png</file>
+        <file>images/showgrid.png</file>
+        <file>images/skeleton.png</file>
+        <file>images/x_ray.png</file>
+        <file>images/floortile.ppm</file>
+        <file>images/add_keyframe.png</file>
+        <file>images/import.png</file>
+        <file>images/generate_cloth.png</file>
+        <file>images/add_seamline.png</file>
+        <file>images/export_as_video.png</file>
+        <file>shaders/phong.frag</file>
+        <file>shaders/phong.vert</file>
+        <file>shaders/simple.frag</file>
+        <file>shaders/simple.vert</file>
+        <file>shaders/skinning.vert</file>
+        <file>config/jointMap.cfg</file>
+    </qresource>
+</RCC>

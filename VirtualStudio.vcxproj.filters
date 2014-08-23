@@ -1,0 +1,325 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{06846d73-dda6-490c-9176-e6c457aad126}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{f2702ff5-c53a-458f-80b8-91f1564a46d3}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Resource Files\shaders">
+      <UniqueIdentifier>{7ef473b9-2aed-4bb0-bc12-00f36deb7d21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\images">
+      <UniqueIdentifier>{4c17326e-9cab-4d7c-b671-9f93ceca421d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="abstractscene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="animation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="animation_editor_widget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cad2d.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cloth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mainwindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="material.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="object_browser_widget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pattern.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="simulation_window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_animation.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_animation.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_animation_editor_widget.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_animation_editor_widget.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_mainwindow.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_mainwindow.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_pattern.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_pattern.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_simulation_window.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_simulation_window.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_virtualstudio.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bounding_volume.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gadget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_mocap_import_dialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_mocap_import_dialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="mocap_import_dialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="abstractscene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <CustomBuild Include="animation_editor_widget.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <ClInclude Include="cad2d.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cloth.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <CustomBuild Include="mainwindow.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <ClInclude Include="material.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="object_browser_widget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <CustomBuild Include="pattern.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <ClInclude Include="sampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <CustomBuild Include="simulation_window.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <ClInclude Include="texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bounding_volume.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gadget.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scene_node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_mocapimportdialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="virtualstudio.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <None Include="shaders\phong.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\phong.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <CustomBuild Include="camera.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="animation.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="scene.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="mocap_import_dialog.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="images\add.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\arrow_down.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\arrow_up.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\bindpose.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\camera.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\clothes.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\control_end_blue.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\control_fastforward_blue.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\control_pause_blue.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\control_play_blue.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\control_repeat_blue.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\control_rewind_blue.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\control_start_blue.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\cross.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\exit.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\import_avatar.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\import_pattern.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\open.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\pan.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\rotate.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\save.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\select.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\shading.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\shading_wireframe.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\showgrid.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\wireframe.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\wood.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="images\zoom.png">
+      <Filter>Resource Files\images</Filter>
+    </None>
+    <None Include="shaders\simple.frag">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\simple.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="shaders\skinning.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
+    <None Include="ClassDiagram.cd" />
+  </ItemGroup>
+</Project>
