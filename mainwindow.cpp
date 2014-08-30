@@ -67,6 +67,10 @@ void MainWindow::createActions()
 	file_import_pattern_action_->setStatusTip(tr("Import pattern"));
 	file_import_pattern_action_->setToolTip(tr("Import pattern into the canvas"));
 
+	file_import_cloth_action_ = new QAction(QIcon(":images/clothes.png"), tr("Import cloth"), this);
+	file_import_cloth_action_->setStatusTip(tr("Import cloth"));
+	file_import_cloth_action_->setToolTip(tr("Import cloth into the simulation"));
+
     file_export_as_video_action_ = new QAction(QIcon(":images/export_as_video.png"), tr("Export as video"), this);
     file_export_as_video_action_->setStatusTip(tr("Export as video"));
     file_export_as_video_action_->setToolTip(tr("Export as video"));
@@ -119,6 +123,7 @@ void MainWindow::createMenusAndToolBars()
 	file_menu_->addAction(file_open_action_);
 	file_menu_->addAction(file_import_avatar_action_);
 	file_menu_->addAction(file_import_pattern_action_);
+	file_menu_->addAction(file_import_cloth_action_);
     file_menu_->addAction(file_export_as_video_action_);
 	file_menu_->addSeparator();
 	file_menu_->addAction(file_exit_action_);
@@ -143,6 +148,7 @@ void MainWindow::createMenusAndToolBars()
 	file_tool_bar_->addAction(file_open_action_);
 	file_tool_bar_->addAction(file_import_avatar_action_);
 	file_tool_bar_->addAction(file_import_pattern_action_);
+	file_tool_bar_->addAction(file_import_cloth_action_);
     file_tool_bar_->addAction(file_export_as_video_action_);
 
 	simulation_tool_bar_ = addToolBar(tr("&Simulation"));
@@ -324,4 +330,16 @@ void MainWindow::addSeamline()
 void MainWindow::generateCloth()
 {
 
+}
+
+void MainWindow::fileImportCloth()
+{
+	if (okToContinue()) {
+		QString file_name = QFileDialog::getOpenFileName(this, tr("Import Cloth"),  ".", tr("OBJ files (*.obj)"));
+
+		if (!file_name.isEmpty()) {
+			scene_->importCloth(file_name);
+			simulation_view_->paintGL();
+		}
+	}
 }

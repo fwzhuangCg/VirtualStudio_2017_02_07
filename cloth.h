@@ -2,7 +2,9 @@
 #define CLOTH_H
 
 #include <QVector3D>
+#include <memory>
 #include "scene_node.h"
+#include "ClothMotion\cloth_motion.h"
 
 // 物理常量
 const double DAMPING = 0.01;							// 阻尼
@@ -102,16 +104,42 @@ private:
 
 // 布料
 // 3D Simulation
-class Cloth : public SceneNode
+
+class QOpenGLBuffer;
+class QOpenGLVertexArrayObject;
+
+class Cloth
 {
+	typedef std::tr1::shared_ptr<SimCloth> SmtClothPtr;
 public:
 	Cloth(void);
+	Cloth(SmtClothPtr cloth);
 	~Cloth(void);
 
+	QOpenGLBuffer* position_buffer() { return position_buffer_; }
+	QOpenGLBuffer* normal_buffer() { return normal_buffer_; }
+	QOpenGLBuffer* texcoord_buffer() { return texcoord_buffer_; }
+	QOpenGLVertexArrayObject* vao() { return vao_; }
+	void setVAO(QOpenGLVertexArrayObject* pvao) { vao_ = pvao; cloth_init_buffer(); }
+	size_t face_count();
+	void update(const float * trans) { cloth_update_buffer(); }
+	void loadFrame(int frame) { cloth_update_buffer(); }
+	void cloth_update_buffer();
+
 private:
+	void cloth_init_buffer();
+
 	// 网格
+	const SmtClothPtr cloth_;
 
-	// 物理参数
+	// wunf的服装动画处理对象
+	QOpenGLBuffer*	position_buffer_;
+	QOpenGLBuffer*	normal_buffer_;
+	QOpenGLBuffer*	texcoord_buffer_;
+	QOpenGLVertexArrayObject* vao_;
+
+	std::vector<float> cloth_position_buffer_;
+	std::vector<float> cloth_normal_buffer_;
+	std::vector<float> cloth_texcoord_buffer_;
 };
-
 #endif // CLOTH_H

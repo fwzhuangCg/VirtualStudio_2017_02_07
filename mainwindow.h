@@ -47,14 +47,16 @@ private slots:
 
 	void renderingModeChanged(int);
 
-    void exportAsVideo();
-    void addSeamline();
-    void generateCloth();
+	void exportAsVideo();
+	void addSeamline();
+	void generateCloth();
 
 	bool save();
 	void updateAnimation(int);
-    void importMocap(QString& , QString&);
+	void importMocap(QString& , QString&);
 
+	// wnf添加，导入OBJ服装
+	void fileImportCloth();
 private:
 	// 仿真相关成员
 	Scene* scene_;
@@ -64,15 +66,18 @@ private:
 	QAction* file_import_avatar_action_;
 	QAction* file_import_pattern_action_;
 	QAction* file_exit_action_;
-    QAction* file_export_as_video_action_;
-    QAction* simulation_select_action_;
+	QAction* file_export_as_video_action_;
+	QAction* simulation_select_action_;
 	QActionGroup* shading_group_;
 	QAction* simulation_shading_action_;
 	QAction* simulation_xray_action_;
 	QAction* simulation_skeleton_action_;
 	QAction* design_showgrid_action_;
-    QAction* design_add_seamline_action_;
-    QAction* design_generate_cloth_action_;
+	QAction* design_add_seamline_action_;
+	QAction* design_generate_cloth_action_;
+	
+	// wnf添加，导入OBJ服装
+	QAction* file_import_cloth_action_;
 
 	QMenu* file_menu_;
 	QMenu* window_menu_;

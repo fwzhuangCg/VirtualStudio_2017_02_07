@@ -21,44 +21,45 @@ class Camera;
 class Light;
 struct DecorativeObject;
 class QOpenGLFunctions_4_0_Core;
+class ClothHandler;
 /************************************************************************/
 /* 仿真场景                                                              */
 /************************************************************************/
 class SceneModel;
 class Scene : public AbstractScene
 {
-    friend class SceneModel;
+	friend class SceneModel;
 public:
 	Scene( QObject* parent = 0 );
 	~Scene();
 
 	virtual void initialize();
 	virtual void render();
-    virtual void update(float t);
+	virtual void update(float t);
 	virtual void resize( int w, int h );
 
 	int						numClothes() const;
-    Avatar*                 avatar();
+	Avatar*                 avatar();
 	QString					avatarDiffuseTexPath();
 	AnimationTableModel*    avatarAnimationTableModel();
 	SkeletonTreeModel*		avatarSkeletonTreeModel();
 	NameToAnimMap*          avatarNameAnimationMap();
-    NameToChIdMap*          avatarNameChannelIndexMap();
+	NameToChIdMap*          avatarNameChannelIndexMap();
 	
 	void importAvatar(const QString& filename);
 
 	void updateAvatarAnimation(const Animation* anim, int frame);	// 更新avatar动画
 	void restoreToBindpose();						                // 切换到绑定姿态
 
-    void renderFloor() const;
+	void renderFloor() const;
 	void renderAvatar() const;
 	void renderClothes() const;
-    void renderSkeleton() const;
+	void renderSkeleton() const;
 
-    bool pick(const QPoint& pt);    // 拾取场景中的物体
+	bool pick(const QPoint& pt);    // 拾取场景中的物体
 
 	enum InteractionMode 
-    { 
+	{ 
 		SELECT,
 		ROTATE, 
 		TRANSLATE, 
@@ -67,14 +68,14 @@ public:
 	};
 
 	enum DisplayMode 
-    { 
+	{ 
 		SHADING, 
 		SKELETON, 
 		XRAY, 
 		DISPLAY_MODE_COUNT
 	};
 
-    enum { JOINT_SPHERE_RADIUS = 10 }; // 用于拾取关节的包围球半径
+	enum { JOINT_SPHERE_RADIUS = 10 }; // 用于拾取关节的包围球半径
 
 	InteractionMode  interactionMode() const { return interaction_mode_; }
 	void setInteractionMode( InteractionMode mode ) { interaction_mode_ = mode; }
@@ -83,19 +84,23 @@ public:
 	void setDisplayMode( DisplayMode mode ) { display_mode_ = mode; }
 
 	// Camera control
- 	void rotate(const QPoint& prevPos, const QPoint& curPos);
- 	void pan(float dx, float dy);
- 	void zoom(float factor);  
+	void rotate(const QPoint& prevPos, const QPoint& curPos);
+	void pan(float dx, float dy);
+	void zoom(float factor);  
+
+	// wnf添加，导入OBJ服装
+	void importCloth(QString file_name);
 
 private:
-    // uncopyable
-    Scene( const Scene& );
-    Scene& operator=( const Scene& rhs );
+	// uncopyable
+	Scene( const Scene& );
+	Scene& operator=( const Scene& rhs );
 
-    void scaleAvatar();
-    void prepareFloor();    // 准备地板 灯光等舞台道具
+	void scaleAvatar();
+	void prepareFloor();    // 准备地板 灯光等舞台道具
 	void prepareAvatar();   // 准备模特绘制数据
-    void prepareSkeleton(); // 准备骨架绘制数据
+	void prepareSkeleton(); // 准备骨架绘制数据
+	void prepareCloth();   // 准备服装绘制数据
 
 private:
 	const aiScene*	ai_scene_;	// ASSIMP场景
@@ -106,16 +111,16 @@ private:
 	Avatar*			avatar_;	// 模特
 	QVector<Cloth*>	clothes_;	// 布料
 
-    // 装饰性对象
-    DecorativeObject* floor_;
-    TexturePtr floor_tex_;
-    SamplerPtr floor_sampler_;
+	// 装饰性对象
+	DecorativeObject* floor_;
+	TexturePtr floor_tex_;
+	SamplerPtr floor_sampler_;
 
-    TexturePtr avatar_tex_;
-    SamplerPtr avatar_sampler_;
+	TexturePtr avatar_tex_;
+	SamplerPtr avatar_sampler_;
 
 	MaterialPtr	shading_display_material_;
-    MaterialPtr simple_line_material_;
+	MaterialPtr simple_line_material_;
 
 	QMatrix4x4	model_matrix_;
 
@@ -127,17 +132,24 @@ private:
 	QStringList			interaction_mode_names_;
 
 	QOpenGLFunctions_4_0_Core*	glfunctions_;
-    
-    bool is_dual_quaternion_skinning_; // 是否采用双四元数
-    bool is_joint_label_visible_; // 是否显示关节名称
-    bool is_normal_visible_;
+	
+	bool is_dual_quaternion_skinning_; // 是否采用双四元数
+	bool is_joint_label_visible_; // 是否显示关节名称
+	bool is_normal_visible_;
+
+	// wnf添加，服装动画模拟功能模块
+	typedef size_t ClothIndex;
+	ClothHandler * cloth_handler_;
+	QVector<QVector4D> color_;
+	static const QVector4D ori_color_[4];
+	ClothIndex cur_cloth_index_;
 };
 
 // UI相关类
 class SceneGraphTreeWidget : public QTreeWidget
 {
 public:
-    SceneGraphTreeWidget(QWidget* parent = 0);
+	SceneGraphTreeWidget(QWidget* parent = 0);
 };
 
 // 工程文件格式采用json格式
