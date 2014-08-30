@@ -31,9 +31,9 @@
 #include "cmcloth.h"
 #include "nearobs.h"
 
-void static_remesh (Cloth &cloth);
+void static_remesh (SimCloth &cloth);
 
-void dynamic_remesh (Cloth &cloth, const std::vector<Plane> &planes,
+void dynamic_remesh (SimCloth &cloth, const std::vector<Plane> &planes,
                      bool plasticity);
 
 #endif

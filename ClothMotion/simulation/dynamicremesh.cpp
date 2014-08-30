@@ -38,7 +38,7 @@ using namespace std;
 
 static const bool verbose = false;
 
-static Cloth::Remeshing *remeshing;
+static SimCloth::Remeshing *remeshing;
 static bool plasticity;
 
 void create_vert_sizing (Mesh &mesh, const vector<Plane> &planes);
@@ -89,7 +89,7 @@ bool split_worst_edge (Mesh &mesh);
 
 bool improve_some_face (vector<Face*> &active, Mesh &mesh);
 
-void static_remesh (Cloth &cloth) {
+void static_remesh (SimCloth &cloth) {
 	::remeshing = &cloth.remeshing;
 	Mesh &mesh = cloth.mesh;
 	for (int v = 0; v < mesh.verts.size(); v++) {
@@ -113,7 +113,7 @@ void static_remesh (Cloth &cloth) {
 	compute_masses(cloth);
 }
 
-void dynamic_remesh (Cloth &cloth, const vector<Plane> &planes,
+void dynamic_remesh (SimCloth &cloth, const vector<Plane> &planes,
 					 bool plasticity) {
 	::remeshing = &cloth.remeshing;
 	::plasticity = plasticity;

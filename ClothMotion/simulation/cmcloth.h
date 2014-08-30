@@ -39,7 +39,7 @@ struct StretchingSamples {Vec4 s[40][40][40];};
 
 struct BendingData {double d[3][5];};
 
-struct Cloth {
+struct SimCloth {
 	Mesh mesh;
 	struct Material {
 		double density; // area density
@@ -57,7 +57,7 @@ struct Cloth {
 	} remeshing;
 };
 
-void compute_masses (Cloth &cloth);
+void compute_masses (SimCloth &cloth);
 
 Vec4 evaluate_stretching_sample (const Mat2x2 &G, const StretchingData &data);
 

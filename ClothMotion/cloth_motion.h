@@ -5,11 +5,11 @@
 
 struct Simulation;
 struct Mesh;
-struct Cloth;
+struct SimCloth;
 struct Timer;
 struct Velocity;
 
-typedef std::tr1::shared_ptr<Cloth> SmtClothPtr;
+typedef std::tr1::shared_ptr<SimCloth> SmtClothPtr;
 
 class ClothHandler
 {

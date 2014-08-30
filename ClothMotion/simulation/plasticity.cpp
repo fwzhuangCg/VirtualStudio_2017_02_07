@@ -39,7 +39,7 @@ static const double mu = 1e-6;
 Mat2x2 edges_to_face (const Vec3 &theta, const Face *face);
 Vec3 face_to_edges (const Mat2x2 &S, const Face *face);
 
-void reset_plasticity (Cloth &cloth) {
+void reset_plasticity (SimCloth &cloth) {
 	Mesh &mesh = cloth.mesh;
 	for (int n = 0; n < mesh.nodes.size(); n++)
 		mesh.nodes[n]->y = mesh.nodes[n]->x;
@@ -60,11 +60,11 @@ void reset_plasticity (Cloth &cloth) {
 
 void recompute_edge_plasticity (Mesh &mesh);
 
-void optimize_plastic_embedding (Cloth &cloth);
+void optimize_plastic_embedding (SimCloth &cloth);
 
-void plastic_update (Cloth &cloth) {
+void plastic_update (SimCloth &cloth) {
 	Mesh &mesh = cloth.mesh;
-	const vector<std::tr1::shared_ptr<Cloth::Material> > &materials = cloth.materials;
+	const vector<std::tr1::shared_ptr<SimCloth::Material> > &materials = cloth.materials;
 	for (int f = 0; f < mesh.faces.size(); f++) {
 		Face *face = mesh.faces[f];
 		double S_yield = materials[face->label]->yield_curv;
@@ -85,12 +85,12 @@ void plastic_update (Cloth &cloth) {
 // ------------------------------------------------------------------ //
 
 struct EmbedOpt: public NLOpt {
-	Cloth &cloth;
+	SimCloth &cloth;
 	Mesh &mesh;
 	vector<Vec3> y0;
 	mutable vector<Vec3> f;
 	mutable SpMat<Mat3x3> J;
-	EmbedOpt (Cloth &cloth): cloth(cloth), mesh(cloth.mesh) {
+	EmbedOpt (SimCloth &cloth): cloth(cloth), mesh(cloth.mesh) {
 		int nn = mesh.nodes.size();
 		nvar = nn*3;
 		y0.resize(nn);
@@ -107,11 +107,11 @@ struct EmbedOpt: public NLOpt {
 	void finalize (const double *x) const;
 };
 
-void reduce_stretching_stiffnesses (vector<std::tr1::shared_ptr<Cloth::Material> > &materials);
-void restore_stretching_stiffnesses (vector<std::tr1::shared_ptr<Cloth::Material> > &materials);
+void reduce_stretching_stiffnesses (vector<std::tr1::shared_ptr<SimCloth::Material> > &materials);
+void restore_stretching_stiffnesses (vector<std::tr1::shared_ptr<SimCloth::Material> > &materials);
 
-void optimize_plastic_embedding (Cloth &cloth) {
-	// vector<Cloth::Material> materials = cloth.materials;
+void optimize_plastic_embedding (SimCloth &cloth) {
+	// vector<SimCloth::Material> materials = cloth.materials;
 	reduce_stretching_stiffnesses(cloth.materials);
 	line_search_newtons_method(EmbedOpt(cloth), OptOptions().max_iter(1));
 	restore_stretching_stiffnesses(cloth.materials);
@@ -178,7 +178,7 @@ void EmbedOpt::finalize (const double *x) const {
 		mesh.nodes[n]->y = y0[n] + get_subvec(x, n);
 }
 
-void reduce_stretching_stiffnesses (vector<std::tr1::shared_ptr<Cloth::Material> > &materials) {
+void reduce_stretching_stiffnesses (vector<std::tr1::shared_ptr<SimCloth::Material> > &materials) {
 	for (int m = 0; m < materials.size(); m++)
 		for (int i = 0; i < 40; i++)
 			for (int j = 0; j < 40; j++)
@@ -186,7 +186,7 @@ void reduce_stretching_stiffnesses (vector<std::tr1::shared_ptr<Cloth::Material>
 					materials[m]->stretching.s[i][j][k] *= 1e-2;
 }
 
-void restore_stretching_stiffnesses (vector<std::tr1::shared_ptr<Cloth::Material> > &materials) {
+void restore_stretching_stiffnesses (vector<std::tr1::shared_ptr<SimCloth::Material> > &materials) {
 	for (int m = 0; m < materials.size(); m++)
 		for (int i = 0; i < 40; i++)
 			for (int j = 0; j < 40; j++)

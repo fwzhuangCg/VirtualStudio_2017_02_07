@@ -35,12 +35,12 @@ using namespace std;
 vector<Vec2> get_strain_limits (const vector<SmtClothPtr> &cloths) {
 	vector<Vec2> strain_limits;
 	for (int c = 0; c < cloths.size(); c++) {
-		const Cloth &cloth = *cloths[c];
+		const SimCloth &cloth = *cloths[c];
 		const Mesh &mesh = cloth.mesh;
 		int f0 = strain_limits.size();
 		strain_limits.resize(strain_limits.size() + cloth.mesh.faces.size());
 		for (int f = 0; f < mesh.faces.size(); f++) {
-			const Cloth::Material *material =
+			const SimCloth::Material *material =
 				cloth.materials[mesh.faces[f]->label].get();
 			strain_limits[f0+f] = Vec2(material->strain_min,
 									   material->strain_max);

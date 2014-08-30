@@ -37,7 +37,7 @@
 #include <string>
 #include <vector>
 
-typedef std::tr1::shared_ptr<Cloth> SmtClothPtr;
+typedef std::tr1::shared_ptr<SimCloth> SmtClothPtr;
 
 struct Wind {
     double density;

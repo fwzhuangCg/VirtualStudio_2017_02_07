@@ -30,7 +30,7 @@
 #include "cmcloth.h"
 #include "constraint.h"
 
-void apply_pop_filter (Cloth &cloth, const std::vector<Constraint*> &cons,
+void apply_pop_filter (SimCloth &cloth, const std::vector<Constraint*> &cons,
                        double regularization=1e3);
 
 #endif

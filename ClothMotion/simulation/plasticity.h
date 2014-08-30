@@ -29,11 +29,11 @@
 
 #include "cmcloth.h"
 
-void reset_plasticity (Cloth &cloth);
+void reset_plasticity (SimCloth &cloth);
 
-void plastic_update (Cloth &cloth);
+void plastic_update (SimCloth &cloth);
 
-void optimize_plastic_embedding (Cloth &cloth);
+void optimize_plastic_embedding (SimCloth &cloth);
 
 struct Residual {Mat2x2 S_res; double damage;};
 std::vector<Residual> back_up_residuals (Mesh &mesh);

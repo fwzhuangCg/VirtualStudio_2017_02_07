@@ -92,7 +92,7 @@ void ClothHandler::update_avatars_to_handler(DoubleDataBuffer position)
 // used to import obj cloth file
 void ClothHandler::add_clothes_to_handler(const char * filename)
 {
-	SmtClothPtr cloth(new Cloth);
+	SmtClothPtr cloth(new SimCloth);
 	load_obj(cloth->mesh, filename);
 
 	std::fstream fs("patameters/parameter.txt");
@@ -123,7 +123,7 @@ void ClothHandler::add_clothes_to_handler(const char * filename)
 
 	// init material
 	std::string mat_file;
-	std::tr1::shared_ptr<Cloth::Material> material(new Cloth::Material);
+	std::tr1::shared_ptr<SimCloth::Material> material(new SimCloth::Material);
 	fs >> tab >> mat_file;
 	mat_file = "material/" + mat_file + ".txt";
 	std::fstream matfs(mat_file);
@@ -286,7 +286,7 @@ void ClothHandler::init_simulation()
 	{
 		for (int m = 0; m < sim_->cloths[c]->materials.size(); m++) 
 		{
-			std::tr1::shared_ptr<Cloth::Material> mat = sim_->cloths[c]->materials[m];
+			std::tr1::shared_ptr<SimCloth::Material> mat = sim_->cloths[c]->materials[m];
 			if (mat->strain_min != infinity || mat->strain_max != infinity)
 				has_strain_limits = true;
 			if (mat->yield_curv != infinity)
@@ -366,7 +366,7 @@ bool ClothHandler::load_cmfile_to_replay(const char * fileName)
 			return false;
 		for(int cloth_index = 0; cloth_index < cloth; ++cloth_index)
 		{
-			SmtClothPtr cloth(new Cloth);
+			SmtClothPtr cloth(new SimCloth);
 			Mesh & mesh = cloth->mesh;
 			int vertexNum = 0;
 			ifs >> tag >> vertexNum;
@@ -413,7 +413,7 @@ void ClothHandler::write_frame(int frame)
 {
 	for(size_t i = 0; i < clothes_.size(); i++)
 	{
-		SmtClothPtr copy_cloth(new Cloth);
+		SmtClothPtr copy_cloth(new SimCloth);
 		copy_cloth->mesh = deep_copy(clothes_[i]->mesh);
 		clothes_frame_[i].push_back(copy_cloth);
 	}
@@ -449,7 +449,7 @@ void ClothHandler::load_frame(int frame)
 
 SmtClothPtr ClothHandler::load_cloth_from_obj(const char * filename)
 {
-	SmtClothPtr cloth(new Cloth);
+	SmtClothPtr cloth(new SimCloth);
 	load_obj(cloth->mesh, filename);
 
 	std::fstream fs("patameters/parameter.txt");
@@ -480,7 +480,7 @@ SmtClothPtr ClothHandler::load_cloth_from_obj(const char * filename)
 
 	// init material
 	std::string mat_file;
-	std::tr1::shared_ptr<Cloth::Material> material(new Cloth::Material);
+	std::tr1::shared_ptr<SimCloth::Material> material(new SimCloth::Material);
 	fs >> tab >> mat_file;
 	mat_file = "material/" + mat_file + ".txt";
 	std::fstream matfs(mat_file);

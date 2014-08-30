@@ -35,7 +35,7 @@ using namespace std;
 
 static const bool verbose = false;
 
-static const vector<std::tr1::shared_ptr<Cloth::Material> > *materials;
+static const vector<std::tr1::shared_ptr<SimCloth::Material> > *materials;
 
 typedef Mat<9,9> Mat9x9;
 typedef Mat<9,6> Mat9x6;
@@ -220,7 +220,7 @@ Vec<4,int> indices (const Node *n0, const Node *n1,
 #define USE_SPARSE3
 
 template <Space s>
-double internal_energy (const Cloth &cloth) {
+double internal_energy (const SimCloth &cloth) {
     const Mesh &mesh = cloth.mesh;
     ::materials = &cloth.materials;
     double E = 0;
@@ -231,14 +231,14 @@ double internal_energy (const Cloth &cloth) {
     }
     return E;
 }
-template double internal_energy<PS> (const Cloth&);
-template double internal_energy<WS> (const Cloth&);
+template double internal_energy<PS> (const SimCloth&);
+template double internal_energy<WS> (const SimCloth&);
 
 // A = dt^2 J + dt damp J
 // b = dt f + dt^2 J v + dt damp J v
 
 template <Space s>
-void add_internal_forces (const Cloth &cloth, SpMat<Mat3x3> &A,
+void add_internal_forces (const SimCloth &cloth, SpMat<Mat3x3> &A,
                           vector<Vec3> &b, double dt) {
     const Mesh &mesh = cloth.mesh;
     ::materials = &cloth.materials;
@@ -282,9 +282,9 @@ void add_internal_forces (const Cloth &cloth, SpMat<Mat3x3> &A,
         }
     }
 }
-template void add_internal_forces<PS> (const Cloth&, SpMat<Mat3x3>&,
+template void add_internal_forces<PS> (const SimCloth&, SpMat<Mat3x3>&,
                                        vector<Vec3>&, double);
-template void add_internal_forces<WS> (const Cloth&, SpMat<Mat3x3>&,
+template void add_internal_forces<WS> (const SimCloth&, SpMat<Mat3x3>&,
                                        vector<Vec3>&, double);
 
 bool contains (const Mesh &mesh, const Node *node) {
@@ -301,7 +301,7 @@ double constraint_energy (const vector<Constraint*> &cons) {
     return E;
 }
 
-void add_constraint_forces (const Cloth &cloth, const vector<Constraint*> &cons,
+void add_constraint_forces (const SimCloth &cloth, const vector<Constraint*> &cons,
                             SpMat<Mat3x3> &A, vector<Vec3> &b, double dt) {
     const Mesh &mesh = cloth.mesh;
     for (int c = 0; c < cons.size(); c++) {
@@ -339,7 +339,7 @@ void add_constraint_forces (const Cloth &cloth, const vector<Constraint*> &cons,
     }
 }
 
-void add_friction_forces (const Cloth &cloth, const vector<Constraint*> cons,
+void add_friction_forces (const SimCloth &cloth, const vector<Constraint*> cons,
                           SpMat<Mat3x3> &A, vector<Vec3> &b, double dt) {
     const Mesh &mesh = cloth.mesh;
     for (int c = 0; c < cons.size(); c++) {
@@ -362,7 +362,7 @@ void add_friction_forces (const Cloth &cloth, const vector<Constraint*> cons,
 
 void project_outside (Mesh &mesh, const vector<Constraint*> &cons);
 
-void implicit_update (Cloth &cloth, const vector<Vec3> &fext,
+void implicit_update (SimCloth &cloth, const vector<Vec3> &fext,
                       const vector<Mat3x3> &Jext,
                       const vector<Constraint*> &cons, double dt,
                       bool update_positions) {
@@ -405,7 +405,7 @@ Vec3 wind_force (const Face *face, const Wind &wind) {
     return wind.density*face->a*abs(vn)*vn*face->n + wind.drag*face->a*vt;
 }
 
-void add_external_forces (const Cloth &cloth, const Vec3 &gravity,
+void add_external_forces (const SimCloth &cloth, const Vec3 &gravity,
                           const Wind &wind, vector<Vec3> &fext,
                           vector<Mat3x3> &Jext) {
     const Mesh &mesh = cloth.mesh;
@@ -419,7 +419,7 @@ void add_external_forces (const Cloth &cloth, const Vec3 &gravity,
     }
 }
 
-void add_morph_forces (const Cloth &cloth, const Morph &morph, double t,
+void add_morph_forces (const SimCloth &cloth, const Morph &morph, double t,
                        double dt, vector<Vec3> &fext, vector<Mat3x3> &Jext) {
     const Mesh &mesh = cloth.mesh;
     for (int v = 0; v < mesh.verts.size(); v++) {

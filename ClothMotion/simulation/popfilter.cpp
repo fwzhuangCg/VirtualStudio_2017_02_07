@@ -43,13 +43,13 @@ struct PopOpt: public NLOpt {
     // add spring to x0: minimize E(x) + m a0 . (x - x0) + mu (x - x0)^2/2
     // gradient: -F(x) + m a0 + mu (x - x0)
     // hessian: -J(x) + mu
-    Cloth &cloth;
+    SimCloth &cloth;
     Mesh &mesh;
     const vector<Constraint*> &cons;
     vector<Vec3> x0, a0;
     mutable vector<Vec3> f;
     mutable SpMat<Mat3x3> J;
-    PopOpt (Cloth &cloth, const vector<Constraint*> &cons):
+    PopOpt (SimCloth &cloth, const vector<Constraint*> &cons):
         cloth(cloth), mesh(cloth.mesh), cons(cons) {
         int nn = mesh.nodes.size();
         nvar = nn*3;
@@ -73,7 +73,7 @@ struct PopOpt: public NLOpt {
 
 void subtract_rigid_acceleration (const Mesh &mesh);
 
-void apply_pop_filter (Cloth &cloth, const vector<Constraint*> &cons,
+void apply_pop_filter (SimCloth &cloth, const vector<Constraint*> &cons,
                        double regularization) {
     ::mu = regularization;
     // subtract_rigid_acceleration(cloth.mesh);

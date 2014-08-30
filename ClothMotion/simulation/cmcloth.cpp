@@ -31,7 +31,7 @@ using namespace std;
 
 static const int nsamples = 30;
 
-void compute_masses (Cloth &cloth) {
+void compute_masses (SimCloth &cloth) {
 	for (int v = 0; v < cloth.mesh.verts.size(); v++)
 		cloth.mesh.verts[v]->m = 0;
 	for (int n = 0; n < cloth.mesh.nodes.size(); n++)
