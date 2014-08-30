@@ -624,5 +624,8 @@
     <None Include="ClothMotion\alglib\vssver2.scc">
       <Filter>ClothMotion\alglib</Filter>
     </None>
+    <None Include="shaders\lbs.vert">
+      <Filter>Resource Files\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -12,11 +12,11 @@ out vec2 TexCoord;
 
 uniform mat4 ModelViewMatrix;
 uniform mat3 NormalMatrix;
-uniform mat4 ProjectionMatrix;
 uniform mat4 MVP;
 uniform mat4 JointMatrices[128]; // an avatar contains at most 128 joints
 uniform bool GPUSkinning;   // CPU or GPU skinning
 
+// linear blend skinning
 void lbs(in vec3 normal, in vec3 position, out vec3 newNormal, out vec3 newPosition)
 {
 	vec4 jointWeights = JointWeights;
@@ -48,9 +48,10 @@ void main()
 	}
 	else
 	{
-		TexCoord = VertexTexCoord;
 		Normal = normalize( NormalMatrix * VertexNormal );
 		Position = vec3( ModelViewMatrix * vec4(VertexPosition, 1.0) );
 		gl_Position = MVP * vec4(VertexPosition, 1.0);
-	}	
+	}
+
+	TexCoord = VertexTexCoord;
 }

@@ -42,7 +42,7 @@ Scene::Scene( QObject* parent )
 	// Initialize the camera position and orientation
 	display_mode_names_ << QStringLiteral( "shade" )
 						<< QStringLiteral( "shadeWithNoMaterial" )
-						<< QStringLiteral( "shadingwireframe" );
+						<< QStringLiteral( "shadeWithPureColor" );
 
 	interaction_mode_names_ << QStringLiteral( "rotate" )
 							<< QStringLiteral( "pan" )
@@ -76,13 +76,13 @@ void Scene::initialize()
 
 	// Initialize resources
 	shading_display_material_ = MaterialPtr(new Material);
-	shading_display_material_->setShaders(":/shaders/skinning.vert", ":/shaders/phong.frag");
+	shading_display_material_->setShaders(":/shaders/phong.vert", ":/shaders/phong.frag");
 	simple_line_material_ = MaterialPtr(new Material);
 	simple_line_material_->setShaders(":/shaders/simple.vert", ":/shaders/simple.frag");
 
 	// Enable depth testing
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 	glClearColor( 0.65f, 0.77f, 1.0f, 1.0f );
 
@@ -90,14 +90,14 @@ void Scene::initialize()
 	QOpenGLShaderProgramPtr shader = shading_display_material_->shader();
 
 	// Get subroutine indices DISPLAY_MODE_COUNT
-	for ( int i = 0; i < 2; ++i) 
+	for ( int i = 0; i < 3; ++i) 
 	{
 		display_mode_subroutines_[i] = 
 			glfunctions_->glGetSubroutineIndex( shader->programId(), GL_FRAGMENT_SHADER, display_mode_names_.at( i ).toLatin1() );
 	}
 
 	// prepare floor rendering data
-	prepareFloor();
+	//prepareFloor();
 
 	// position the cemara
 	camera_->setEye(10, 10, 10);
@@ -124,17 +124,21 @@ void Scene::render()
 	// Pass in the usual transformation matrices
 	shading_display_shader->setUniformValue("ModelViewMatrix", mv);
 	shading_display_shader->setUniformValue("NormalMatrix", mv.normalMatrix());
+	shading_display_shader->setUniformValue("ViewMatrix", view_matrix);
 	shading_display_shader->setUniformValue("MVP", MVP);  
-	shading_display_shader->setUniformValue("Skinning", false);
-	shading_display_shader->setUniformValue("DQSkinning", false);
-	shading_display_shader->setUniformValue("Light.Position", view_matrix * QVector4D(1.0f, 1.0f, 1.0f, 0.0f));
-	shading_display_shader->setUniformValue("Light.Intensity", QVector3D(0.5f, 0.5f, 0.5f));
-	shading_display_shader->setUniformValue("Material.Ka", QVector3D( 0.1f, 0.1f, 0.1f ));
-	shading_display_shader->setUniformValue("Material.Kd", QVector3D( 0.9f, 0.9f, 0.9f ));
-	shading_display_shader->setUniformValue("Material.Ks", QVector3D( 0.9f, 0.9f, 0.9f ));
-	shading_display_shader->setUniformValue("Material.Shininess", 5.0f);
+	//shading_display_shader->setUniformValue("Skinning", false);
+	//shading_display_shader->setUniformValue("DQSkinning", false);
+	//shading_display_shader->setUniformValue("Light.Position", view_matrix * QVector4D(1.0f, 1.0f, 1.0f, 0.0f));
+	//shading_display_shader->setUniformValue("Light.Intensity", QVector3D(0.5f, 0.5f, 0.5f));
+	shading_display_shader->setUniformValue("GPUSkinning", false);
+	shading_display_shader->setUniformValue("Light2.Direction", /*view_matrix * */QVector4D(0.0f, -1.0f, 0.0f, 0.0f));
+	shading_display_shader->setUniformValue("Light2.Intensity", QVector3D(1.0f, 1.0f, 1.0f));
+	shading_display_shader->setUniformValue("Material.Ka", QVector3D( 0.5f, 0.5f, 0.5f ));
+	shading_display_shader->setUniformValue("Material.Kd", QVector3D( 0.5f, 0.5f, 0.5f ));
+	shading_display_shader->setUniformValue("Material.Ks", QVector3D( 0.0f, 0.0f, 0.0f ));
+	shading_display_shader->setUniformValue("Material.Shininess", 10.0f);
 
-	renderFloor();
+	//renderFloor();
 
 	is_dual_quaternion_skinning_ = false;
 
@@ -154,7 +158,9 @@ void Scene::render()
 
 			if(clothes_.size())
 			{
+				glfunctions_->glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &display_mode_subroutines_[1]);
 				renderClothes(shading_display_shader);
+				reset_transform();
 			}
 
 			shading_display_shader->release();

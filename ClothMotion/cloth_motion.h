@@ -1,3 +1,6 @@
+#ifndef CLOTH_MOTION_H
+#define CLOTH_MOTION_H
+
 #include <memory>
 #include <vector>
 #include <fstream>
@@ -72,3 +75,5 @@ private:
 
 	static const double shrinkFactor;
 };
+
+#endif
