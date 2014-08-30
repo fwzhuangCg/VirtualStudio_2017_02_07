@@ -34,7 +34,8 @@ Scene::Scene( QObject* parent )
 	  avatar_tex_(new Texture),
 	  floor_tex_(new Texture),
 	  is_dual_quaternion_skinning_(true),
-	  is_joint_label_visible_(false)
+	  is_joint_label_visible_(false),
+	  cloth_handler_(new ClothHandler())
 {
 	model_matrix_.setToIdentity();
 
@@ -47,6 +48,7 @@ Scene::Scene( QObject* parent )
 							<< QStringLiteral( "pan" )
 							<< QStringLiteral( "zoom" )
 							<< QStringLiteral( "select" );
+	reset_transform();
 }
 
 Scene::~Scene()
@@ -149,6 +151,11 @@ void Scene::render()
 			}
 
 			renderAvatar();
+
+			if(clothes_.size())
+			{
+				renderClothes(shading_display_shader);
+			}
 
 			shading_display_shader->release();
 		}
@@ -268,9 +275,19 @@ void Scene::renderAvatar() const
 	}
 }
 
-void Scene::renderClothes() const
+void Scene::renderClothes(QOpenGLShaderProgramPtr & shader) const
 {
-
+	cloth_handler_->transform_cloth(transform_, cur_cloth_index_);	
+	for(size_t i = 0; i < clothes_.size(); ++i)
+	{
+		QVector4D color = color_[i];
+		if(i == hover_cloth_index_)
+			color = color + QVector4D(0.2f, 0.2f, 0.2f, 0.0f);
+		shader->setUniformValue("Color", color);
+		clothes_[i]->cloth_update_buffer();
+		QOpenGLVertexArrayObject::Binder binder( clothes_[i]->vao() );
+		glDrawArrays(GL_TRIANGLES, 0, clothes_[i]->face_count() * 3);
+	}
 }
 
 void Scene::renderSkeleton() const
@@ -613,4 +630,16 @@ void Scene::importCloth(QString file_name)
 	color_.push_back(ori_color_[(clothes_.size() - 1) % 4]);
 	prepareCloth();
 	cur_cloth_index_ = clothes_.size() - 1;
+}
+
+void Scene::reset_transform()
+{
+	for(int i = 0; i < 3; ++i) transform_[i] = 0.f;
+	transform_[3] = 1.f;
+	QQuaternion quater;
+	quater.fromAxisAndAngle(QVector3D(0.f, 1.f, 0.f), 0.f);
+	transform_[4] = quater.x();
+	transform_[5] = quater.y();
+	transform_[6] = quater.z();
+	transform_[7] = quater.scalar();
 }

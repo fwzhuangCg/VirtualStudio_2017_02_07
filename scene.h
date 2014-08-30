@@ -53,7 +53,7 @@ public:
 
 	void renderFloor() const;
 	void renderAvatar() const;
-	void renderClothes() const;
+	void renderClothes(QOpenGLShaderProgramPtr & shader) const;
 	void renderSkeleton() const;
 
 	bool pick(const QPoint& pt);    // 拾取场景中的物体
@@ -101,6 +101,7 @@ private:
 	void prepareAvatar();   // 准备模特绘制数据
 	void prepareSkeleton(); // 准备骨架绘制数据
 	void prepareCloth();   // 准备服装绘制数据
+	void reset_transform();
 
 private:
 	const aiScene*	ai_scene_;	// ASSIMP场景
@@ -143,6 +144,8 @@ private:
 	QVector<QVector4D> color_;
 	static const QVector4D ori_color_[4];
 	ClothIndex cur_cloth_index_;
+	ClothIndex hover_cloth_index_;
+	float transform_[8];
 };
 
 // UI相关类

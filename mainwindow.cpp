@@ -17,7 +17,7 @@
 
 MainWindow::MainWindow( QWidget *parent )
 	: QMainWindow(parent), 
-    scene_(new Scene())
+	scene_(new Scene())
 {
 	printer_ = new QPrinter(QPrinter::HighResolution);
 
@@ -39,7 +39,7 @@ void MainWindow::createViews()
 	pattern_scene_->setSceneRect(0, 0, page_size.width(), page_size.height());
 	design_view_ = new PatternView(this);
 	design_view_->setScene(pattern_scene_);
-    design_view_->setSceneRect(pattern_scene_->sceneRect());
+	design_view_->setSceneRect(pattern_scene_->sceneRect());
 
 	splitter_ = new QSplitter(Qt::Horizontal);
 	QWidget* container = createWindowContainer(simulation_view_, this);
@@ -71,19 +71,19 @@ void MainWindow::createActions()
 	file_import_cloth_action_->setStatusTip(tr("Import cloth"));
 	file_import_cloth_action_->setToolTip(tr("Import cloth into the simulation"));
 
-    file_export_as_video_action_ = new QAction(QIcon(":images/export_as_video.png"), tr("Export as video"), this);
-    file_export_as_video_action_->setStatusTip(tr("Export as video"));
-    file_export_as_video_action_->setToolTip(tr("Export as video"));
+	file_export_as_video_action_ = new QAction(QIcon(":images/export_as_video.png"), tr("Export as video"), this);
+	file_export_as_video_action_->setStatusTip(tr("Export as video"));
+	file_export_as_video_action_->setToolTip(tr("Export as video"));
 
 	file_exit_action_ = new QAction(QIcon(":images/exit.png"), tr("Exit"), this);
 	file_exit_action_->setStatusTip(tr("Quit"));
 	file_exit_action_->setToolTip(tr("Quit the application"));
 	file_exit_action_->setShortcut(QKeySequence::Quit);
 
-    simulation_select_action_ = new QAction(QIcon(":images/select.png"), tr("Select"), this);
-    simulation_select_action_->setStatusTip(tr("Click to select"));
-    simulation_select_action_->setToolTip(tr("Select object"));
-    simulation_select_action_->setCheckable(true);
+	simulation_select_action_ = new QAction(QIcon(":images/select.png"), tr("Select"), this);
+	simulation_select_action_->setStatusTip(tr("Click to select"));
+	simulation_select_action_->setToolTip(tr("Select object"));
+	simulation_select_action_->setCheckable(true);
 
 	simulation_shading_action_ = new QAction(QIcon(":images/shading.png"), tr("Shading"), this);
 	simulation_shading_action_->setStatusTip(tr("View the avatar"));
@@ -108,13 +108,13 @@ void MainWindow::createActions()
 	design_showgrid_action_->setStatusTip(tr("Show/Hide the background grid"));
 	design_showgrid_action_->setToolTip(tr("Show/Hide the background grid"));
 
-    design_add_seamline_action_ = new QAction(QIcon(":images/add_seamline.png"), tr("Add seamline"), this);
-    design_showgrid_action_->setStatusTip(tr("Add seamline"));
-    design_showgrid_action_->setToolTip(tr("Add seamline"));
+	design_add_seamline_action_ = new QAction(QIcon(":images/add_seamline.png"), tr("Add seamline"), this);
+	design_showgrid_action_->setStatusTip(tr("Add seamline"));
+	design_showgrid_action_->setToolTip(tr("Add seamline"));
 
-    design_generate_cloth_action_ = new QAction(QIcon(":images/generate_cloth.png"), tr("Generate cloth"), this);
-    design_showgrid_action_->setStatusTip(tr("Generate cloth"));
-    design_showgrid_action_->setToolTip(tr("Generate cloth"));
+	design_generate_cloth_action_ = new QAction(QIcon(":images/generate_cloth.png"), tr("Generate cloth"), this);
+	design_showgrid_action_->setStatusTip(tr("Generate cloth"));
+	design_showgrid_action_->setToolTip(tr("Generate cloth"));
 }
 
 void MainWindow::createMenusAndToolBars()
@@ -124,14 +124,14 @@ void MainWindow::createMenusAndToolBars()
 	file_menu_->addAction(file_import_avatar_action_);
 	file_menu_->addAction(file_import_pattern_action_);
 	file_menu_->addAction(file_import_cloth_action_);
-    file_menu_->addAction(file_export_as_video_action_);
+	file_menu_->addAction(file_export_as_video_action_);
 	file_menu_->addSeparator();
 	file_menu_->addAction(file_exit_action_);
 
 	window_menu_ = menuBar()->addMenu(tr("&Window"));
 
 	simulation_menu_ = menuBar()->addMenu(tr("&Simulation"));
-    simulation_menu_->addAction(simulation_select_action_);
+	simulation_menu_->addAction(simulation_select_action_);
 	simulation_menu_->addSeparator();
 	QMenu* display_mode_menu = new QMenu(tr("Display mode"));
 	display_mode_menu->addAction(simulation_shading_action_);
@@ -141,18 +141,18 @@ void MainWindow::createMenusAndToolBars()
 
 	design_menu_ = menuBar()->addMenu(tr("&Design"));
 	design_menu_->addAction(design_showgrid_action_);
-    design_menu_->addAction(design_add_seamline_action_);
-    design_menu_->addAction(design_generate_cloth_action_);
+	design_menu_->addAction(design_add_seamline_action_);
+	design_menu_->addAction(design_generate_cloth_action_);
 
 	file_tool_bar_ = addToolBar(tr("&File"));
 	file_tool_bar_->addAction(file_open_action_);
 	file_tool_bar_->addAction(file_import_avatar_action_);
 	file_tool_bar_->addAction(file_import_pattern_action_);
 	file_tool_bar_->addAction(file_import_cloth_action_);
-    file_tool_bar_->addAction(file_export_as_video_action_);
+	file_tool_bar_->addAction(file_export_as_video_action_);
 
 	simulation_tool_bar_ = addToolBar(tr("&Simulation"));
-    simulation_tool_bar_->addAction(simulation_select_action_);
+	simulation_tool_bar_->addAction(simulation_select_action_);
 
 	rendering_mode_combo_ = new QComboBox;
 	rendering_mode_combo_->addItem(simulation_shading_action_->icon(), simulation_shading_action_->text());
@@ -162,8 +162,8 @@ void MainWindow::createMenusAndToolBars()
 
 	design_tool_bar_ = addToolBar(tr("&Design"));
 	design_tool_bar_->addAction(design_showgrid_action_);
-    design_tool_bar_->addAction(design_add_seamline_action_);
-    design_tool_bar_->addAction(design_generate_cloth_action_);
+	design_tool_bar_->addAction(design_add_seamline_action_);
+	design_tool_bar_->addAction(design_generate_cloth_action_);
 }		
 
 void MainWindow::createDockWidgets()
@@ -192,6 +192,7 @@ void MainWindow::createConnections()
 {
 	connect(file_import_avatar_action_, SIGNAL(triggered()), this, SLOT(fileImportAvatar()));
 	connect(file_import_pattern_action_, SIGNAL(triggered()), this, SLOT(fileImportPattern()));
+	connect(file_import_cloth_action_, SIGNAL(triggered()), this, SLOT(fileImportCloth()));
 	connect(design_showgrid_action_, SIGNAL(triggered()), this, SLOT(toggleGridVisible()));
 
 	// interaction mode
@@ -199,24 +200,24 @@ void MainWindow::createConnections()
 
 	connect(simulation_select_action_, SIGNAL(triggered()), this, SLOT(switchInteractionMode()));
 
-    connect(animation_editor_, SIGNAL(frameChanged(int)), this, SLOT(updateAnimation(int)));
+	connect(animation_editor_, SIGNAL(frameChanged(int)), this, SLOT(updateAnimation(int)));
 	connect(animation_editor_, SIGNAL(bindposeRestored()), simulation_view_, SLOT(restoreToBindpose()));
-    connect(animation_editor_, SIGNAL(mocapSelected(QString& , QString&)), this, SLOT(importMocap(QString& , QString&)));
+	connect(animation_editor_, SIGNAL(mocapSelected(QString& , QString&)), this, SLOT(importMocap(QString& , QString&)));
 }
 
 bool MainWindow::okToContinue()
 {
 	if (isWindowModified()) 
-    {
+	{
 		int r = QMessageBox::warning(this, tr("VirtualStudio"),
 			tr("The document has been modified.\nDo you want to save your changes?"),
 			QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 		if (r == QMessageBox::Yes) 
-        {
+		{
 			return save();
 		} 
-        else if (r == QMessageBox::Cancel)
-        {
+		else if (r == QMessageBox::Cancel)
+		{
 			return false;
 		}
 	}
@@ -226,20 +227,20 @@ bool MainWindow::okToContinue()
 void MainWindow::fileImportAvatar()
 {
 	if (okToContinue()) 
-    {
+	{
 		QString file_name = QFileDialog::getOpenFileName(this, tr("Import Avatar"),  ".", tr("Avatar files (*.dae; *.x)"));
 
 		if (!file_name.isEmpty()) 
-        {
+		{
 			scene_->importAvatar(file_name);
 			simulation_view_->paintGL();
-            // glue the avatar and editor together
-            //scene_->setSyntheticAnimation(animation_editor_->syntheticAnimation());
-            //animation_editor_->setAvatar(scene_->avatar());
-            animation_editor_->reset();
+			// glue the avatar and editor together
+			//scene_->setSyntheticAnimation(animation_editor_->syntheticAnimation());
+			//animation_editor_->setAvatar(scene_->avatar());
+			animation_editor_->reset();
 			animation_editor_->setAnimationTableModel(scene_->avatarAnimationTableModel());
-            animation_editor_->setNameAnimationMap(scene_->avatarNameAnimationMap());
-            animation_editor_->setNameChannelIndexMap(scene_->avatarNameChannelIndexMap());
+			animation_editor_->setNameAnimationMap(scene_->avatarNameAnimationMap());
+			animation_editor_->setNameChannelIndexMap(scene_->avatarNameChannelIndexMap());
 			animation_editor_->setSkeletonTreeModel(scene_->avatarSkeletonTreeModel());	
 		}
 	}
@@ -264,22 +265,22 @@ bool MainWindow::save()
 
 void MainWindow::updateAnimation(int frame)
 {
-    Q_ASSERT(simulation_view_ && animation_editor_);
-    simulation_view_->updateAnimation(animation_editor_->syntheticAnimation(), frame);
+	Q_ASSERT(simulation_view_ && animation_editor_);
+	simulation_view_->updateAnimation(animation_editor_->syntheticAnimation(), frame);
 }
 
 void MainWindow::importMocap(QString& asf_file, QString& amc_file)
 {
-    if (scene_->avatar())
-    {
-        scene_->avatar()->importMocap(asf_file, amc_file);
-        QMessageBox::information(this, "Mocap import", 
-            QString("Mocap data from file %1 and %2!").arg(asf_file).arg(amc_file), QMessageBox::Ok);
-    }
-    else
-    {
-        QMessageBox::critical(this, "Failed to import %1 and %2", QString("").arg(asf_file).arg(amc_file), QMessageBox::Ok);
-    }
+	if (scene_->avatar())
+	{
+		scene_->avatar()->importMocap(asf_file, amc_file);
+		QMessageBox::information(this, "Mocap import", 
+			QString("Mocap data from file %1 and %2!").arg(asf_file).arg(amc_file), QMessageBox::Ok);
+	}
+	else
+	{
+		QMessageBox::critical(this, "Failed to import %1 and %2", QString("").arg(asf_file).arg(amc_file), QMessageBox::Ok);
+	}
 }
 
 void MainWindow::toggleGridVisible()
@@ -290,14 +291,14 @@ void MainWindow::toggleGridVisible()
 
 void MainWindow::switchInteractionMode()
 {
-    if (simulation_select_action_->isChecked())
-    {
-        scene_->setInteractionMode(Scene::SELECT);
-    }
-    else
-    {
-        scene_->setInteractionMode(Scene::ROTATE);
-    }
+	if (simulation_select_action_->isChecked())
+	{
+		scene_->setInteractionMode(Scene::SELECT);
+	}
+	else
+	{
+		scene_->setInteractionMode(Scene::ROTATE);
+	}
 }
 
 void MainWindow::renderingModeChanged( int index)
@@ -314,7 +315,7 @@ void MainWindow::renderingModeChanged( int index)
 		scene_->setDisplayMode(Scene::XRAY);
 		break;
 	}
-    simulation_view_->paintGL();
+	simulation_view_->paintGL();
 }
 
 void MainWindow::exportAsVideo()

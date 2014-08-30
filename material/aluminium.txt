@@ -1,0 +1,12 @@
+density 0.071
+stretchingdata
+data00 1.8e6 0 1.8e6 1.8e6
+data10 1.8e6 0 1.8e6 1.8e6
+data11 1.8e6 0 1.8e6 1.8e6
+data12 1.8e6 0 1.8e6 1.8e6
+data13 1.8e6 0 1.8e6 1.8e6
+data14 1.8e6 0 1.8e6 1.8e6
+bendingdata
+96e-6 96e-6 96e-6 96e-6 96e-6
+96e-6 96e-6 96e-6 96e-6 96e-6
+96e-6 96e-6 96e-6 96e-6 96e-6
