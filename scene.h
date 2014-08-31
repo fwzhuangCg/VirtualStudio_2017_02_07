@@ -146,6 +146,9 @@ private:
 	ClothIndex cur_cloth_index_;
 	ClothIndex hover_cloth_index_;
 	float transform_[8];
+
+	// wnf添加，恢复CPU蒙皮
+	bool gpu_skinning_;
 };
 
 // UI相关类

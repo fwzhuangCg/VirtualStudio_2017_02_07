@@ -824,7 +824,7 @@
   <ImportGroup Label="ExtensionTargets" />
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties Qt5Version_x0020_x64="Qt5.2.1_opengl_x64" UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" />
+      <UserProperties Qt5Version_x0020_x64="QT5_x64" UicDir=".\GeneratedFiles" RccDir=".\GeneratedFiles" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

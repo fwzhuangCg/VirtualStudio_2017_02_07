@@ -189,6 +189,10 @@ struct Skin
 	enum { MAX_NUM_WEIGHTS = 4 };   // 每个顶点最多受四个关节影响
 
 	SkinInfo		    skininfo;	// 蒙皮信息
+	QVector<QVector3D>	bindpose_pos;	// 绑定姿态位置
+	//QVector<QVector3D>	bindpose_shrinked;	// 绑定姿态位置
+	QVector<QVector3D>  bindpose_norm;  // 绑定姿态法线
+
 	QVector<QVector3D>	positions;	// 绑定姿态位置
 	QVector<QVector3D>  normals;    // 绑定姿态法线
 	QVector<QVector2D>	texcoords;
@@ -477,7 +481,7 @@ public:
 
 	Joint* finddJointByName(const QString& name) const;
 	void updateAnimation(const Animation* animation, int elapsed_time);
-	//void skinning();	     已废除 目前完全采用GPU蒙皮                                       
+	void skinning();	     //已废除 目前完全采用GPU蒙皮                                       
 
 	bool hasAnimations() const;
 	bool hasMaterials() const;
@@ -492,6 +496,8 @@ public:
     void importMocap(QString& asf, QString& amc);
     void addAnimation(const Animation& anim);
     //void addAnimations(const AnimList& anims);
+
+	void updateSkinVBO(); // wnf添加，用来CPU蒙皮
 
 private:
 	Joint* buildSkeleton(aiNode* pNode, Joint* pParent);							// 构造骨架	

@@ -17,6 +17,7 @@ uniform mat4 JointMatrices[128]; // an avatar contains at most 128 joints
 uniform vec4 JointDQs[256]; // dual quaternions, each represented by 2 vec4
 uniform bool Skinning; // skinning or not
 uniform bool DQSkinning;   // dual quaternion skinning or linear blend skinning
+uniform bool GPUSkinning;   // CPU or GPU skinning
 
 // linear blend skinning
 void LBS(in vec3 normal, in vec3 position, out vec3 newNormal, out vec3 newPosition)
@@ -110,27 +111,37 @@ void main()
 {
 	vec3 transformedNorm;
 	vec3 transformedPos;
-    if (Skinning)
+	if(GPUSkinning)
 	{
-        if (DQSkinning)
-        {
-            DLB(VertexNormal, VertexPosition, transformedNorm, transformedPos);
-        }
-        else
-        {
-            LBS(VertexNormal, VertexPosition, transformedNorm, transformedPos);
-        }
+		if (Skinning)
+		{
+			if (DQSkinning)
+			{
+				DLB(VertexNormal, VertexPosition, transformedNorm, transformedPos);
+			}
+			else
+			{
+				LBS(VertexNormal, VertexPosition, transformedNorm, transformedPos);
+			}
 
-		Normal = normalize( NormalMatrix * transformedNorm );
-		Position = vec3( ModelViewMatrix * vec4(transformedPos, 1.0) );
-		gl_Position = MVP * vec4(transformedPos, 1.0);
+			Normal = normalize( NormalMatrix * transformedNorm );
+			Position = vec3( ModelViewMatrix * vec4(transformedPos, 1.0) );
+			gl_Position = MVP * vec4(transformedPos, 1.0);
+		}
+		else
+		{
+			Normal = normalize( NormalMatrix * VertexNormal );
+			Position = vec3( ModelViewMatrix * vec4(VertexPosition, 1.0) );
+			gl_Position = MVP * vec4(VertexPosition, 1.0);
+		}
 	}
 	else
 	{
+		TexCoord = VertexTexCoord;
 		Normal = normalize( NormalMatrix * VertexNormal );
 		Position = vec3( ModelViewMatrix * vec4(VertexPosition, 1.0) );
 		gl_Position = MVP * vec4(VertexPosition, 1.0);
-	}
-
+	}	
+    
     TexCoord = VertexTexCoord;
 }

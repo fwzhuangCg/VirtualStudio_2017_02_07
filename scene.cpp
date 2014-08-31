@@ -35,7 +35,8 @@ Scene::Scene( QObject* parent )
 	  floor_tex_(new Texture),
 	  is_dual_quaternion_skinning_(true),
 	  is_joint_label_visible_(false),
-	  cloth_handler_(new ClothHandler())
+	  cloth_handler_(new ClothHandler()),
+	  gpu_skinning_(false)
 {
 	model_matrix_.setToIdentity();
 
@@ -76,7 +77,7 @@ void Scene::initialize()
 
 	// Initialize resources
 	shading_display_material_ = MaterialPtr(new Material);
-	shading_display_material_->setShaders(":/shaders/phong.vert", ":/shaders/phong.frag");
+	shading_display_material_->setShaders(":/shaders/skinning.vert", ":/shaders/phong.frag");
 	simple_line_material_ = MaterialPtr(new Material);
 	simple_line_material_->setShaders(":/shaders/simple.vert", ":/shaders/simple.frag");
 
@@ -146,7 +147,7 @@ void Scene::render()
 	{
 	case SHADING:
 		{
-			if (avatar_ && !avatar_->bindposed_) // 已废除软件蒙皮 完全采用GPU蒙皮
+			if (gpu_skinning_ && avatar_ && !avatar_->bindposed_) // 已废除软件蒙皮 完全采用GPU蒙皮
 			{
 				shading_display_shader->setUniformValueArray("JointMatrices", avatar_->joint_matrices_.data(), avatar_->joint_matrices_.count());
 				shading_display_shader->setUniformValueArray("JointDQs", avatar_->joint_dual_quaternions_.data(), avatar_->joint_dual_quaternions_.count());
@@ -333,10 +334,14 @@ SkeletonTreeModel* Scene::avatarSkeletonTreeModel()
 
 void Scene::updateAvatarAnimation(const Animation* anim, int frame)
 {
-	avatar_->setBindposed(false);
 	if (anim) 
 	{	
 		avatar_->updateAnimation(anim, frame * AnimationClip::SAMPLE_SLICE);
+		if(!gpu_skinning_)
+		{
+			avatar_->skinning();
+			avatar_->updateSkinVBO();
+		}
 	}
 }
 

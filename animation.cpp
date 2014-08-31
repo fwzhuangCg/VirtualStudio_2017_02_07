@@ -787,7 +787,7 @@ Avatar::Avatar(const aiScene* pScene, const QString& filename)
     has_materials_(ai_scene_->HasMaterials()),
     has_animations_(ai_scene_->HasAnimations()),
     bindposed_( true ),
-    //gpu_skinning_(true),
+    //gpu_skinning_(false),
     file_dir_(QFileInfo(filename).absolutePath()),
     asfamc_importer_(nullptr)
 {
@@ -1158,7 +1158,9 @@ void Avatar::makeSkinCache()
             new_skin.joint_weights_[vertex_index].setZ(r);
             new_skin.joint_weights_[vertex_index].setW(s);
         }
-
+		
+		new_skin.bindpose_pos = new_skin.positions;
+		new_skin.bindpose_norm = new_skin.normals;
         skins_.push_back(new_skin);
     }
 }
@@ -1201,47 +1203,47 @@ void Avatar::createBoundings()
     bounding_aabb_.pt_max = pt_max;
 }
 
-// void Avatar::skinning()
-// {
-//     if (gpu_skinning_) 
-//     {
-//         // transform feedback
-//     }
-//     else 
-//     {
-//         for (auto skin_it = skins_.begin(); skin_it != skins_.end(); ++skin_it) 
-//         {
-//             for (int info_index = 0; info_index < skin_it->skininfo.size(); ++info_index) 
-//             {
-//                 VertexInfo& info = skin_it->skininfo[info_index];
-//                 QVector4D position;
-//                 QVector4D normal;
-// 
-//                 for (auto jw_it = info.joint_weights.begin(); jw_it != info.joint_weights.end(); ++jw_it) 
-//                 {
-//                     Joint* joint = jw_it->first;
-//                     float weight = jw_it->second;
-// 
-//                     QMatrix4x4 transform;
-//                     transform = joint->global_transform * joint->inverse_bindpose_matrix;
-//                     QVector4D pos(skin_it->bindpose_pos[info_index], 1.0);
-//                     position += transform * pos * weight;
-//                     // 法线变换
-//                     QVector4D norm(skin_it->bindpose_norm[info_index]);
-//                     normal += transform * norm * weight;
-//                 }
-// 
-//                 skin_it->positions[info_index].setX(position.x());
-//                 skin_it->positions[info_index].setY(position.y());
-//                 skin_it->positions[info_index].setZ(position.z());
-// 
-//                 skin_it->normals[info_index].setX(normal.x());
-//                 skin_it->normals[info_index].setY(normal.y());
-//                 skin_it->normals[info_index].setZ(normal.z());
-//             }
-//         }
-//     }
-// }
+ void Avatar::skinning()
+ {
+     //if (gpu_skinning_) 
+     //{
+     //    // transform feedback
+     //}
+    // else 
+     {
+         for (auto skin_it = skins_.begin(); skin_it != skins_.end(); ++skin_it) 
+         {
+             for (int info_index = 0; info_index < skin_it->skininfo.size(); ++info_index) 
+             {
+                 VertexInfo& info = skin_it->skininfo[info_index];
+                 QVector4D position;
+                 QVector4D normal;
+ 
+                 for (auto jw_it = info.joint_weights.begin(); jw_it != info.joint_weights.end(); ++jw_it) 
+                 {
+                     Joint* joint = jw_it->first;
+                     float weight = jw_it->second;
+ 
+                     QMatrix4x4 transform;
+                     transform = joint->global_transform * joint->inverse_bindpose_matrix;
+                     QVector4D pos(skin_it->bindpose_pos[info_index], 1.0);
+                     position += transform * pos * weight;
+                     // 法线变换
+                     QVector4D norm(skin_it->bindpose_norm[info_index]);
+                     normal += transform * norm * weight;
+                 }
+ 
+                 skin_it->positions[info_index].setX(position.x());
+                 skin_it->positions[info_index].setY(position.y());
+                 skin_it->positions[info_index].setZ(position.z());
+ 
+                 skin_it->normals[info_index].setX(normal.x());
+                 skin_it->normals[info_index].setY(normal.y());
+                 skin_it->normals[info_index].setZ(normal.z());
+             }
+         }
+     }
+ }
 
 Joint* Avatar::finddJointByName( const QString& name ) const
 {
@@ -1399,36 +1401,29 @@ bool Avatar::bindposed() const
     return bindposed_;
 }
 
+void Avatar::updateSkinVBO()
+{
+	for (auto skin_it = skins_.begin(); skin_it != skins_.end(); ++skin_it) 
+	{
+		skin_it->position_buffer_->bind();
+		skin_it->position_buffer_->allocate(skin_it->positions.data(), skin_it->positions.size() * sizeof(QVector3D));
+		skin_it->position_buffer_->release();
+ 
+		skin_it->normal_buffer_->bind();
+		skin_it->normal_buffer_->allocate(skin_it->normals.data(), skin_it->normals.size() * sizeof(QVector3D));
+		skin_it->normal_buffer_->release();
+	}
+}
+
 void Avatar::setBindposed(bool val)
 {
-    bindposed_ = val;
-    // 根据是否处于绑定姿态 更新VBO
-//     if (bindposed_) 
-//     {
-//         for (auto skin_it = skins_.begin(); skin_it != skins_.end(); ++skin_it) 
-//         {
-//             skin_it->position_buffer_->bind();
-//             skin_it->position_buffer_->allocate(skin_it->bindpose_pos.data(), skin_it->bindpose_pos.size() * sizeof(QVector3D));
-//             skin_it->position_buffer_->release();
-// 
-//             skin_it->normal_buffer_->bind();
-//             skin_it->normal_buffer_->allocate(skin_it->bindpose_norm.data(), skin_it->bindpose_norm.size() * sizeof(QVector3D));
-//             skin_it->normal_buffer_->release();
-//         }
-//     }
-//     else 
-//     {
-//         for (auto skin_it = skins_.begin(); skin_it != skins_.end(); ++skin_it) 
-//         {
-//             skin_it->position_buffer_->bind();
-//             skin_it->position_buffer_->allocate(skin_it->positions.data(), skin_it->positions.size() * sizeof(QVector3D));
-//             skin_it->position_buffer_->release();
-// 
-//             skin_it->normal_buffer_->bind();
-//             skin_it->normal_buffer_->allocate(skin_it->normals.data(), skin_it->normals.size() * sizeof(QVector3D));
-//             skin_it->normal_buffer_->release();
-//         }
-//     }
+    bindposed_ = val; 
+	for (auto skin_it = skins_.begin(); skin_it != skins_.end(); ++skin_it) 
+	{
+		skin_it->positions = skin_it->bindpose_pos;
+		skin_it->normals = skin_it->bindpose_norm;
+	}
+	updateSkinVBO();
 }
 
 void Avatar::updateJointMatrices()
