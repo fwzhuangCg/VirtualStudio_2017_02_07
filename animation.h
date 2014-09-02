@@ -262,7 +262,7 @@ class AnimationClip : public QGraphicsObject
 
 public:
 	enum { SECOND_WIDTH = 100 }; // 每一秒对应宽度为100像素
-    enum { SAMPLE_SLICE = 16 };	 // 采样时间片16ms
+    enum { SAMPLE_SLICE = 20, SIM_SLICE = 2 };	 // 采样时间片20ms, 模拟时间片2ms 
 	enum { Type = UserType + 1 };
 
 	AnimationClip(QMenu* contex_menu, QGraphicsScene *scene, Animation* anim, AnimationTrack* track, int x, int y);

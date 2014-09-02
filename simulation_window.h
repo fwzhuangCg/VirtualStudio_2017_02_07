@@ -20,6 +20,7 @@ public:
 public slots:
 	void updateAnimation(const Animation* anim, int frame);
 	void restoreToBindpose();
+	void startSimulate(const Animation* anim);
 
 	void resizeGL();
 

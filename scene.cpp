@@ -36,7 +36,8 @@ Scene::Scene( QObject* parent )
 	  is_dual_quaternion_skinning_(true),
 	  is_joint_label_visible_(false),
 	  cloth_handler_(new ClothHandler()),
-	  gpu_skinning_(false)
+	  gpu_skinning_(false),
+	  replay_(false)
 {
 	model_matrix_.setToIdentity();
 
@@ -373,11 +374,11 @@ SkeletonTreeModel* Scene::avatarSkeletonTreeModel()
 	return nullptr;
 }
 
-void Scene::updateAvatarAnimation(const Animation* anim, int frame)
+void Scene::updateAvatarAnimation(const Animation* anim, int elapsed_time)
 {
 	if (anim) 
 	{	
-		avatar_->updateAnimation(anim, frame * AnimationClip::SAMPLE_SLICE);
+		avatar_->updateAnimation(anim, elapsed_time);
 		if(!gpu_skinning_)
 		{
 			avatar_->skinning();
@@ -752,4 +753,82 @@ void Scene::pickCloth(BYTE red, bool hover)
 	}
 	else
 		hover_cloth_index_ = -1;
+}
+
+void Scene::initAvatar2Simulation()
+{
+	const Skin & skin = avatar_->skins().at(0);
+
+	size_t size = skin.positions.size();
+	double * position = new double[size * 3];
+	for(size_t i = 0; i < size; ++i)
+	{
+		const QVector3D & point = skin.positions[i];
+		for(int j = 0; j < 3; ++j)
+			position[i * 3 + j] = point[j];
+	}
+
+	size = skin.texcoords.size();
+	double * texcoord = new double[size * 2];
+	for(size_t i = 0; i < size; ++i)
+	{
+		const QVector3D & tex = skin.texcoords[i];
+		for(int j = 0; j < 2; ++j)
+			texcoord[i * 2 + j] = tex[j];
+	}
+
+	size = skin.indices.size();
+	int * indices = new int[size];
+	for(size_t i = 0; i < size; ++i)
+	{
+		const uint & index = skin.indices[i];
+		indices[i] = index;
+	}
+
+	cloth_handler_->init_avatars_to_handler(
+		position, 
+		texcoord, 
+		indices, 
+		skin.num_triangles);
+
+	delete[] position;
+	delete[] texcoord;
+	delete[] indices;
+}
+
+void Scene::updateAvatar2Simulation()
+{
+	const Skin & skin = avatar_->skins().at(0);
+
+	size_t size = skin.positions.size();
+	double * position = new double[size * 3];
+	for(size_t i = 0; i < size; ++i)
+	{
+		const QVector3D & point = skin.positions[i];
+		for(int j = 0; j < 3; ++j)
+			position[i * 3 + j] = point[j];
+	}
+
+	cloth_handler_->update_avatars_to_handler(position);
+	delete[] position;
+}
+
+void Scene::startSimulate()
+{
+	cloth_handler_->begin_simulate();
+}
+
+void Scene::simulateStep()
+{
+	cloth_handler_->sim_next_step();
+}
+
+void Scene::writeAFrame(int frame)
+{
+	cloth_handler_->write_frame(frame);
+}
+
+void Scene::finishedSimulate()
+{
+	replay_ = true;
 }

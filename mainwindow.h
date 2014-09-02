@@ -57,6 +57,8 @@ private slots:
 
 	// wnf添加，导入OBJ服装
 	void fileImportCloth();
+	void startSimulate();
+
 private:
 	// 仿真相关成员
 	Scene* scene_;
@@ -75,6 +77,7 @@ private:
 	QAction* design_showgrid_action_;
 	QAction* design_add_seamline_action_;
 	QAction* design_generate_cloth_action_;
+	QAction* start_simulate_;
 	
 	// wnf添加，导入OBJ服装
 	QAction* file_import_cloth_action_;

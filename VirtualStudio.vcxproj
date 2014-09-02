@@ -820,6 +820,11 @@
     <None Include="shaders\simple.vert" />
     <None Include="shaders\skinning.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="images\simulate.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
   <ProjectExtensions>

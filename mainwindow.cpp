@@ -115,6 +115,10 @@ void MainWindow::createActions()
 	design_generate_cloth_action_ = new QAction(QIcon(":images/generate_cloth.png"), tr("Generate cloth"), this);
 	design_showgrid_action_->setStatusTip(tr("Generate cloth"));
 	design_showgrid_action_->setToolTip(tr("Generate cloth"));
+
+	start_simulate_ = new QAction(QIcon(":images/simulate.png"), tr("Simulate cloth animation"), this);
+	start_simulate_->setStatusTip(tr("Simulate cloth animation"));
+	start_simulate_->setToolTip(tr("Simulate cloth animation"));
 }
 
 void MainWindow::createMenusAndToolBars()
@@ -132,6 +136,8 @@ void MainWindow::createMenusAndToolBars()
 
 	simulation_menu_ = menuBar()->addMenu(tr("&Simulation"));
 	simulation_menu_->addAction(simulation_select_action_);
+	simulation_menu_->addSeparator();
+	simulation_menu_->addAction(start_simulate_);
 	simulation_menu_->addSeparator();
 	QMenu* display_mode_menu = new QMenu(tr("Display mode"));
 	display_mode_menu->addAction(simulation_shading_action_);
@@ -159,6 +165,8 @@ void MainWindow::createMenusAndToolBars()
 	rendering_mode_combo_->addItem(simulation_skeleton_action_->icon(), simulation_skeleton_action_->text());
 	rendering_mode_combo_->addItem(simulation_xray_action_->icon(), simulation_xray_action_->text());
 	simulation_tool_bar_->addWidget(rendering_mode_combo_);
+	simulation_tool_bar_->addSeparator();
+	simulation_tool_bar_->addAction(start_simulate_);
 
 	design_tool_bar_ = addToolBar(tr("&Design"));
 	design_tool_bar_->addAction(design_showgrid_action_);
@@ -203,6 +211,8 @@ void MainWindow::createConnections()
 	connect(animation_editor_, SIGNAL(frameChanged(int)), this, SLOT(updateAnimation(int)));
 	connect(animation_editor_, SIGNAL(bindposeRestored()), simulation_view_, SLOT(restoreToBindpose()));
 	connect(animation_editor_, SIGNAL(mocapSelected(QString& , QString&)), this, SLOT(importMocap(QString& , QString&)));
+
+	connect(start_simulate_, SIGNAL(triggered()), this, SLOT(startSimulate()));
 }
 
 bool MainWindow::okToContinue()
@@ -343,4 +353,9 @@ void MainWindow::fileImportCloth()
 			simulation_view_->paintGL();
 		}
 	}
+}
+
+void MainWindow::startSimulate()
+{
+	simulation_view_->startSimulate(animation_editor_->syntheticAnimation());
 }

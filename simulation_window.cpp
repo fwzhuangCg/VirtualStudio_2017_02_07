@@ -197,7 +197,7 @@ void SimulationWindow::wheelEvent( QWheelEvent *event )
 void SimulationWindow::updateAnimation(const Animation* anim, int frame)
 {
 	// 更新Avatar和Cloth动画
-	scene_->updateAvatarAnimation(anim, frame);
+	scene_->updateAvatarAnimation(anim, frame * AnimationClip::SAMPLE_SLICE);
 	paintGL();
 }
 
@@ -228,4 +228,54 @@ unsigned char SimulationWindow::pickColor(QPoint pos)
 	glReadPixels(pos.x(), height() - pos.y(), 1, 1, GL_RGB,GL_UNSIGNED_BYTE, data);
 	glReadBuffer(GL_FRONT);
 	return data[0];
+}
+
+void SimulationWindow::startSimulate(const Animation* anim)
+{
+	double length;
+	if (anim->ticks_per_second) {
+		length = (anim->ticks / anim->ticks_per_second) * 1000; // 节拍数换算成时长
+	}
+	else {
+		length = anim->ticks * 1000;
+	}
+
+	int total_frame = static_cast<int>(length / AnimationClip::SAMPLE_SLICE);
+	bool inited = false;
+
+	int factor = AnimationClip::SAMPLE_SLICE / AnimationClip::SIM_SLICE;
+	total_frame *= factor;
+
+	QProgressDialog process(NULL);  
+	process.setLabelText(tr("simulating..."));  
+	process.setRange(0, total_frame + 1);  
+	process.setModal(true);  
+	process.setCancelButtonText(tr("cancel"));
+
+	for(int i = 0; i <= total_frame; ++i)
+	{
+		process.setValue(i + 1);
+		if(process.wasCanceled())  
+			break;  
+		if(!inited)
+		{
+			scene_->updateAvatarAnimation(anim, 0);
+			scene_->initAvatar2Simulation();
+			scene_->startSimulate();
+			inited = true;
+		}
+		else
+		{
+			scene_->updateAvatarAnimation(anim, i * AnimationClip::SIM_SLICE);
+			scene_->updateAvatar2Simulation();
+			scene_->simulateStep();
+		}
+
+		if(i % factor == 0)
+			scene_->writeAFrame(i / factor);
+		paintGL();
+	}
+	scene_->finishedSimulate();
+
+	QMessageBox::information(NULL, "Simulation finished", "Simulation finished.", QMessageBox::Ok);
 }

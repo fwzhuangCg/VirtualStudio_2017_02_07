@@ -49,7 +49,8 @@ public:
 	
 	void importAvatar(const QString& filename);
 
-	void updateAvatarAnimation(const Animation* anim, int frame);	// 更新avatar动画
+	void updateAvatarAnimation(const Animation* anim, int elapsed_time);	// 更新avatar动画
+	void updateAvatar2Simulation();
 	void restoreToBindpose();						                // 切换到绑定姿态
 
 	void renderFloor() const;
@@ -60,6 +61,11 @@ public:
 
 	bool pick(const QPoint& pt);    // 拾取场景中的物体
 	void pickCloth(BYTE red, bool hover);
+	void initAvatar2Simulation();
+	void startSimulate();
+	void simulateStep();
+	void writeAFrame(int frame);
+	void finishedSimulate();
 
 	enum InteractionMode 
 	{ 
@@ -147,6 +153,7 @@ private:
 	typedef size_t ClothIndex;
 	ClothHandler * cloth_handler_;
 	QVector<QVector4D> color_;
+	bool replay_;
 	static const QVector4D ori_color_[4];
 	ClothIndex cur_cloth_index_;
 	ClothIndex hover_cloth_index_;
