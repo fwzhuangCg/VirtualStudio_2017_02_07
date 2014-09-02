@@ -44,7 +44,7 @@ void MainWindow::createViews()
 	splitter_ = new QSplitter(Qt::Horizontal);
 	QWidget* container = createWindowContainer(simulation_view_, this);
 	container->setMinimumSize(simulation_view_->size());
-	container->resize(500, 300);
+	container->resize(800, 300);
 	
 	splitter_->addWidget(container);
 	splitter_->addWidget(design_view_);

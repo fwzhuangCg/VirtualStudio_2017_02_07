@@ -120,6 +120,7 @@ void AnimationTrackScene::dropEvent( QGraphicsSceneDragDropEvent *event )
 
         event->setDropAction(Qt::MoveAction);
         event->accept();
+		remixer_->frameChanged(0);
     }
     else 
     {
