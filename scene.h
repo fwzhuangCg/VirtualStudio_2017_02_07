@@ -90,6 +90,9 @@ public:
 
 	// wnf添加，导入OBJ服装
 	void importCloth(QString file_name);
+	void rotateCloth(const QPoint& prevPos, const QPoint& curPos);
+	void moveCloth(float dx, float dy);
+	void zoomCloth(float factor);
 
 private:
 	// uncopyable
@@ -101,7 +104,6 @@ private:
 	void prepareAvatar();   // 准备模特绘制数据
 	void prepareSkeleton(); // 准备骨架绘制数据
 	void prepareCloth();   // 准备服装绘制数据
-	void reset_transform();
 
 private:
 	const aiScene*	ai_scene_;	// ASSIMP场景
@@ -145,10 +147,11 @@ private:
 	static const QVector4D ori_color_[4];
 	ClothIndex cur_cloth_index_;
 	ClothIndex hover_cloth_index_;
-	float transform_[8];
-
+	
 	// wnf添加，恢复CPU蒙皮
 	bool gpu_skinning_;
+
+	void resetTransform(float * transform);
 };
 
 // UI相关类

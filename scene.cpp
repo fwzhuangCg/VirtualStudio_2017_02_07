@@ -49,7 +49,6 @@ Scene::Scene( QObject* parent )
 							<< QStringLiteral( "pan" )
 							<< QStringLiteral( "zoom" )
 							<< QStringLiteral( "select" );
-	reset_transform();
 }
 
 Scene::~Scene()
@@ -101,8 +100,8 @@ void Scene::initialize()
 	//prepareFloor();
 
 	// position the cemara
-	camera_->setEye(10, 10, 10);
-	camera_->setCenter(0, 0, 0);
+	/*camera_->setEye(10, 10, 10);
+	camera_->setCenter(0, 0, 0);*/
 }
 
 void Scene::render()
@@ -132,7 +131,7 @@ void Scene::render()
 	//shading_display_shader->setUniformValue("Light.Position", view_matrix * QVector4D(1.0f, 1.0f, 1.0f, 0.0f));
 	//shading_display_shader->setUniformValue("Light.Intensity", QVector3D(0.5f, 0.5f, 0.5f));
 	shading_display_shader->setUniformValue("GPUSkinning", false);
-	shading_display_shader->setUniformValue("Light2.Direction", /*view_matrix * */QVector4D(0.0f, -1.0f, 0.0f, 0.0f));
+	shading_display_shader->setUniformValue("Light2.Direction", /*view_matrix * */QVector4D(0.0f, 0.0f, 1.0f, 0.0f));
 	shading_display_shader->setUniformValue("Light2.Intensity", QVector3D(1.0f, 1.0f, 1.0f));
 	shading_display_shader->setUniformValue("Material.Ka", QVector3D( 0.5f, 0.5f, 0.5f ));
 	shading_display_shader->setUniformValue("Material.Kd", QVector3D( 0.5f, 0.5f, 0.5f ));
@@ -161,7 +160,6 @@ void Scene::render()
 			{
 				glfunctions_->glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &display_mode_subroutines_[1]);
 				renderClothes(shading_display_shader);
-				reset_transform();
 			}
 
 			shading_display_shader->release();
@@ -284,7 +282,6 @@ void Scene::renderAvatar() const
 
 void Scene::renderClothes(QOpenGLShaderProgramPtr & shader) const
 {
-	cloth_handler_->transform_cloth(transform_, cur_cloth_index_);	
 	for(size_t i = 0; i < clothes_.size(); ++i)
 	{
 		QVector4D color = color_[i];
@@ -643,14 +640,58 @@ void Scene::importCloth(QString file_name)
 	cur_cloth_index_ = clothes_.size() - 1;
 }
 
-void Scene::reset_transform()
+void Scene::rotateCloth(const QPoint& prevPos, const QPoint& curPos)
 {
-	for(int i = 0; i < 3; ++i) transform_[i] = 0.f;
-	transform_[3] = 1.f;
+	QQuaternion rot = Camera::calcRotation(
+		Camera::screenToBall(prevPos),
+		Camera::screenToBall(curPos)
+	);
+	rot.normalize();
+	float transform[8];
+	resetTransform(transform);
+	transform[4] = rot.x();
+	transform[5] = rot.y();
+	transform[6] = rot.z();
+	transform[7] = rot.scalar();
+	cloth_handler_->transform_cloth(transform, cur_cloth_index_);
+}
+
+void Scene::moveCloth(float dx, float dy)
+{
+	QVector3D vz = camera_->viewDirection();
+	QVector3D vy(0.f, 1.f, 0.f);
+	vy.normalize();
+	QVector4D v(vy, 1);
+	v = v * camera_->viewMatrix();
+	vy = QVector3D(v);
+	vy.normalize();
+	QVector3D vx = QVector3D::crossProduct(vz, vy);
+	vx.normalize();
+	v = - vx * dx * 0.5f + vy * dy * 0.5f;
+	float transform[8];
+	resetTransform(transform);
+	transform[0] = v[0];
+	transform[1] = v[1];
+	transform[2] = v[2];
+	cloth_handler_->transform_cloth(transform, cur_cloth_index_);
+}
+
+void Scene::zoomCloth(float factor)
+{
+	float transform[8];
+	resetTransform(transform);
+	transform[3] = 1.f - factor * 0.001f;
+	cloth_handler_->transform_cloth(transform, cur_cloth_index_);
+}
+
+void Scene::resetTransform(float * transform)
+{
+	for(int i = 0; i < 3; ++i) transform[i] = 0.f;
+	transform[3] = 1.f;
 	QQuaternion quater;
 	quater.fromAxisAndAngle(QVector3D(0.f, 1.f, 0.f), 0.f);
-	transform_[4] = quater.x();
-	transform_[5] = quater.y();
-	transform_[6] = quater.z();
-	transform_[7] = quater.scalar();
+	transform[4] = quater.x();
+	transform[5] = quater.y();
+	transform[6] = quater.z();
+	transform[7] = quater.scalar();
 }
