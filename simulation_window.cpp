@@ -76,7 +76,7 @@ void SimulationWindow::mousePressEvent( QMouseEvent *event )
 		cur_pos_ = prev_pos_ = event->pos();
 
 		if (scene_->interactionMode() == Scene::SELECT)
-			scene_->pick(cur_pos_);
+			scene_->pickCloth(pickColor(event->pos()), false);
 	}
 	
 	QWindow::mousePressEvent(event);
@@ -115,6 +115,10 @@ void SimulationWindow::mouseMoveEvent( QMouseEvent *event )
 		else if (event->buttons() & Qt::RightButton)
 		{
 			scene_->moveCloth(dx, dy);
+		}
+		else
+		{
+			scene_->pickCloth(pickColor(event->pos()), true);
 		}
 	}
 
@@ -201,4 +205,27 @@ void SimulationWindow::restoreToBindpose()
 {
 	scene_->restoreToBindpose();
 	paintGL();
+}
+
+void SimulationWindow::paintForPick()
+{
+	if (isExposed()) {
+		// Make the context current
+		context_->makeCurrent(this);
+
+		// Do the rendering (to the back buffer)
+		scene_->renderForPick();
+
+		//context_->swapBuffers(this);
+	}
+}
+
+unsigned char SimulationWindow::pickColor(QPoint pos)
+{
+	BYTE data[3];
+	paintForPick();
+	glReadBuffer(GL_BACK);
+	glReadPixels(pos.x(), height() - pos.y(), 1, 1, GL_RGB,GL_UNSIGNED_BYTE, data);
+	glReadBuffer(GL_FRONT);
+	return data[0];
 }

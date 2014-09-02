@@ -15,6 +15,7 @@ public:
 
 	void initializeGL();
 	void paintGL();
+	void paintForPick();
 
 public slots:
 	void updateAnimation(const Animation* anim, int frame);
@@ -27,6 +28,7 @@ protected:
 	void mouseReleaseEvent( QMouseEvent* e );
 	void mouseMoveEvent( QMouseEvent *event );
 	void wheelEvent( QWheelEvent *event );
+	unsigned char pickColor(QPoint pos);
 
 //     void keyPressEvent( QKeyEvent* e );
 //     void keyReleaseEvent( QKeyEvent* e );

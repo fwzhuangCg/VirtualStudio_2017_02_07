@@ -207,6 +207,37 @@ void Scene::render()
 	}
 }
 
+void Scene::renderForPick()
+{
+	if(clothes_.size())
+	{
+		glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+		shading_display_material_->bind();
+		QOpenGLShaderProgramPtr shader = shading_display_material_->shader();
+		shader->bind();
+
+		// Set the fragment shader display mode subroutine
+		glfunctions_->glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &display_mode_subroutines_[2]);
+
+		// Pass in the usual transformation matrices
+		model_matrix_.setToIdentity();
+		QMatrix4x4 view_matrix = camera_->viewMatrix();
+		QMatrix4x4 mv = view_matrix * model_matrix_;
+		QMatrix4x4 projection_matrix = camera_->projectionMatrix();
+		QMatrix4x4 MVP = projection_matrix * mv;
+		shader->setUniformValue("ModelViewMatrix", mv);
+		shader->setUniformValue("ViewMatrix", view_matrix);
+		shader->setUniformValue("NormalMatrix", mv.normalMatrix());
+		shader->setUniformValue("MVP", MVP);  
+		shader->setUniformValue("GPUSkinning", false);
+
+		renderClothesForPick(shader);
+
+		shader->release();
+	}
+}
+
 void Scene::update(float t)
 {
 }
@@ -287,6 +318,19 @@ void Scene::renderClothes(QOpenGLShaderProgramPtr & shader) const
 		QVector4D color = color_[i];
 		if(i == hover_cloth_index_)
 			color = color + QVector4D(0.2f, 0.2f, 0.2f, 0.0f);
+		shader->setUniformValue("Color", color);
+		clothes_[i]->cloth_update_buffer();
+		QOpenGLVertexArrayObject::Binder binder( clothes_[i]->vao() );
+		glDrawArrays(GL_TRIANGLES, 0, clothes_[i]->face_count() * 3);
+	}
+}
+
+void Scene::renderClothesForPick(QOpenGLShaderProgramPtr & shader) const
+{
+	for(size_t i = 0; i < clothes_.size(); ++i)
+	{
+		float fred = float(i) * 10 / 255;
+		QVector4D color(fred, 0.0f, 0.0f, 1.0f);
 		shader->setUniformValue("Color", color);
 		clothes_[i]->cloth_update_buffer();
 		QOpenGLVertexArrayObject::Binder binder( clothes_[i]->vao() );
@@ -694,4 +738,18 @@ void Scene::resetTransform(float * transform)
 	transform[5] = quater.y();
 	transform[6] = quater.z();
 	transform[7] = quater.scalar();
+}
+
+void Scene::pickCloth(BYTE red, bool hover)
+{
+	int index = red / 10;
+	if(index >= 0 && index < clothes_.size())
+	{
+		if(hover)
+			hover_cloth_index_ = index;
+		else
+			cur_cloth_index_ = index;
+	}
+	else
+		hover_cloth_index_ = -1;
 }

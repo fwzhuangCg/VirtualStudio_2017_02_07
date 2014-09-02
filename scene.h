@@ -35,6 +35,7 @@ public:
 
 	virtual void initialize();
 	virtual void render();
+	virtual void renderForPick();
 	virtual void update(float t);
 	virtual void resize( int w, int h );
 
@@ -54,9 +55,11 @@ public:
 	void renderFloor() const;
 	void renderAvatar() const;
 	void renderClothes(QOpenGLShaderProgramPtr & shader) const;
+	void renderClothesForPick(QOpenGLShaderProgramPtr & shader) const;
 	void renderSkeleton() const;
 
 	bool pick(const QPoint& pt);    // 拾取场景中的物体
+	void pickCloth(BYTE red, bool hover);
 
 	enum InteractionMode 
 	{ 
