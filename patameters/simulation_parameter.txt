@@ -1,6 +1,6 @@
 frame_time 0.02
 frame_steps 1
-gravity 0.0 0.0 -9.8
+gravity 0.0 -9.8 0.0
 
 wind
 density 1.0
