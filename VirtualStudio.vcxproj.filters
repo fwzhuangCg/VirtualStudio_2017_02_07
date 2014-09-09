@@ -299,6 +299,9 @@
     <ClCompile Include="ClothMotion\simulation\vectors.cpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClCompile>
+    <ClCompile Include="AVIGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="abstractscene.h">
@@ -502,6 +505,9 @@
     <ClInclude Include="ClothMotion\simulation\vectors.h">
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
+    <ClInclude Include="AVIGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="virtualstudio.qrc">
@@ -630,5 +636,13 @@
     <None Include="images\simulate.png">
       <Filter>Resource Files\images</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="images\graphics.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
+    <Image Include="images\picture.png">
+      <Filter>Resource Files\images</Filter>
+    </Image>
   </ItemGroup>
 </Project>

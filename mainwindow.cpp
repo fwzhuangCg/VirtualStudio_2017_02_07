@@ -119,6 +119,14 @@ void MainWindow::createActions()
 	start_simulate_ = new QAction(QIcon(":images/simulate.png"), tr("Simulate cloth animation"), this);
 	start_simulate_->setStatusTip(tr("Simulate cloth animation"));
 	start_simulate_->setToolTip(tr("Simulate cloth animation"));
+
+	design_cloth_color_ = new QAction(QIcon(":images/graphics.png"), tr("Change cloth color"), this);
+	design_cloth_color_->setStatusTip(tr("Change current cloth color"));
+	design_cloth_color_->setToolTip(tr("Change current cloth color"));
+
+	design_cloth_texture_ = new QAction(QIcon(":images/picture.png"), tr("Change cloth texture"), this);
+	design_cloth_texture_->setStatusTip(tr("Change current cloth texture"));
+	design_cloth_texture_->setToolTip(tr("Change current cloth texture"));
 }
 
 void MainWindow::createMenusAndToolBars()
@@ -150,6 +158,10 @@ void MainWindow::createMenusAndToolBars()
 	design_menu_->addAction(design_add_seamline_action_);
 	design_menu_->addAction(design_generate_cloth_action_);
 
+	design_menu_->addSeparator();
+	design_menu_->addAction(design_cloth_texture_);
+	design_menu_->addAction(design_cloth_color_);
+
 	file_tool_bar_ = addToolBar(tr("&File"));
 	file_tool_bar_->addAction(file_open_action_);
 	file_tool_bar_->addAction(file_import_avatar_action_);
@@ -172,6 +184,10 @@ void MainWindow::createMenusAndToolBars()
 	design_tool_bar_->addAction(design_showgrid_action_);
 	design_tool_bar_->addAction(design_add_seamline_action_);
 	design_tool_bar_->addAction(design_generate_cloth_action_);
+
+	design_tool_bar_->addSeparator();
+	design_tool_bar_->addAction(design_cloth_texture_);
+	design_tool_bar_->addAction(design_cloth_color_);
 }		
 
 void MainWindow::createDockWidgets()
@@ -202,6 +218,7 @@ void MainWindow::createConnections()
 	connect(file_import_pattern_action_, SIGNAL(triggered()), this, SLOT(fileImportPattern()));
 	connect(file_import_cloth_action_, SIGNAL(triggered()), this, SLOT(fileImportCloth()));
 	connect(design_showgrid_action_, SIGNAL(triggered()), this, SLOT(toggleGridVisible()));
+	connect(file_export_as_video_action_, SIGNAL(triggered()), this, SLOT(exportAsVideo()));
 
 	// interaction mode
 	connect(rendering_mode_combo_, SIGNAL(currentIndexChanged(int)), this, SLOT(renderingModeChanged(int)));
@@ -213,6 +230,9 @@ void MainWindow::createConnections()
 	connect(animation_editor_, SIGNAL(mocapSelected(QString& , QString&)), this, SLOT(importMocap(QString& , QString&)));
 
 	connect(start_simulate_, SIGNAL(triggered()), this, SLOT(startSimulate()));
+
+	connect(design_cloth_color_, SIGNAL(triggered()), this, SLOT(changeClothColor()));
+	connect(design_cloth_texture_, SIGNAL(triggered()), this, SLOT(changeClothTexture()));
 }
 
 bool MainWindow::okToContinue()
@@ -330,7 +350,7 @@ void MainWindow::renderingModeChanged( int index)
 
 void MainWindow::exportAsVideo()
 {
-
+	simulation_view_->record(animation_editor_->syntheticAnimation());
 }
 
 void MainWindow::addSeamline()
@@ -358,4 +378,29 @@ void MainWindow::fileImportCloth()
 void MainWindow::startSimulate()
 {
 	simulation_view_->startSimulate(animation_editor_->syntheticAnimation());
+}
+
+void MainWindow::changeClothColor()
+{
+	if (okToContinue()) {
+		QColor color = QColorDialog::getColor();
+		if(color.isValid())
+		{
+			QVector4D colorvec(color.redF(), color.greenF(), color.blueF(), color.alphaF());
+			scene_->setClothColor(colorvec);
+			simulation_view_->paintGL();
+		}
+	}
+}
+
+void MainWindow::changeClothTexture()
+{
+	if (okToContinue()) {
+		QString file_name = QFileDialog::getOpenFileName(this, tr("Open Texture File"),  ".", tr("Picture files (*.bmp)"));
+
+		if (!file_name.isEmpty()) {
+			scene_->setClothTexture(file_name);
+			simulation_view_->paintGL();
+		}
+	}
 }

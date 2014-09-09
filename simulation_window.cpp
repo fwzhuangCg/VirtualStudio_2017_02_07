@@ -1,7 +1,6 @@
 #include "simulation_window.h"
 
 #include "scene.h"
-
 #include <QtGui>
 #include <QtWidgets/QtWidgets>
 #include <QOpenGLShaderProgram>
@@ -198,6 +197,8 @@ void SimulationWindow::updateAnimation(const Animation* anim, int frame)
 {
 	// 更新Avatar和Cloth动画
 	scene_->updateAvatarAnimation(anim, frame * AnimationClip::SAMPLE_SLICE);
+	if(scene_->isReplay())
+		scene_->updateClothAnimation(frame);
 	paintGL();
 }
 
@@ -240,11 +241,10 @@ void SimulationWindow::startSimulate(const Animation* anim)
 		length = anim->ticks * 1000;
 	}
 
-	int total_frame = static_cast<int>(length / AnimationClip::SAMPLE_SLICE);
+	int total_frame = static_cast<int>(length / AnimationClip::SIM_SLICE);
 	bool inited = false;
 
 	int factor = AnimationClip::SAMPLE_SLICE / AnimationClip::SIM_SLICE;
-	total_frame *= factor;
 
 	QProgressDialog process(NULL);  
 	process.setLabelText(tr("simulating..."));  
@@ -278,4 +278,79 @@ void SimulationWindow::startSimulate(const Animation* anim)
 	scene_->finishedSimulate();
 
 	QMessageBox::information(NULL, "Simulation finished", "Simulation finished.", QMessageBox::Ok);
+}
+
+void SimulationWindow::record(const Animation* anim)
+{
+	QString file_name = QFileDialog::getSaveFileName(NULL, tr("Save As AVI"),  ".", tr("AVI files (*.avi)"));
+
+	AviGen = new AVIGenerator;
+
+	// set 15fps
+	AviGen->SetRate(15);
+	
+	// give info about bitmap
+	AviGen->SetBitmapHeader(width(), height());		
+
+	// set filename, extension ".avi" is appended if necessary
+	AviGen->SetFileName(file_name.toLocal8Bit().constData());
+
+	// retreiving size of image
+	lpbih=AviGen->GetBitmapHeader();
+
+	// allocating memory
+	bmBits=new BYTE[lpbih->biSizeImage];
+
+	HRESULT hr=AviGen->InitEngine();
+	if (FAILED(hr))
+	{
+		QMessageBox::critical(0, "error", "InitEngine error!");
+		AviGen->ReleaseEngine();
+		delete[] bmBits;
+		delete AviGen;
+		return;
+	}
+
+	double length;
+	if (anim->ticks_per_second) {
+		length = (anim->ticks / anim->ticks_per_second) * 1000; // 节拍数换算成时长
+	}
+	else {
+		length = anim->ticks * 1000;
+	}
+
+	int total_frame = static_cast<int>(length / AnimationClip::SAMPLE_SLICE);
+
+	QProgressDialog process(NULL);  
+	process.setLabelText(tr("Recording..."));  
+	process.setRange(0, total_frame);  
+	process.setModal(true);  
+	process.setCancelButtonText(tr("cancel"));
+
+	for(int i = 0; i < total_frame; ++i)
+	{
+		updateAnimation(anim, i);
+		process.setValue(i + 1);
+		if(process.wasCanceled())  
+			break;
+
+		glReadBuffer(GL_BACK);
+		glReadPixels(0,0,lpbih->biWidth,lpbih->biHeight,GL_BGR_EXT,GL_UNSIGNED_BYTE,bmBits); 
+		// send to avi engine
+		HRESULT hr=AviGen->AddFrame(bmBits);
+		if (FAILED(hr))
+		{
+			QMessageBox::critical(0, "error", "AddFrame error!");
+			AviGen->ReleaseEngine();
+			delete[] bmBits;
+			delete AviGen;
+			return;
+		}
+		glReadBuffer(GL_FRONT);
+	}
+	
+	AviGen->ReleaseEngine();
+	delete[] bmBits;
+	delete AviGen;
+	QMessageBox::information(NULL, "Record finished", "Record finished.", QMessageBox::Ok);
 }

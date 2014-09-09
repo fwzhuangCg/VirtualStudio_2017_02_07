@@ -266,6 +266,7 @@
     <ClCompile Include="abstractscene.cpp" />
     <ClCompile Include="animation.cpp" />
     <ClCompile Include="animation_editor_widget.cpp" />
+    <ClCompile Include="AVIGenerator.cpp" />
     <ClCompile Include="bounding_volume.cpp" />
     <ClCompile Include="cad2d.cpp" />
     <ClCompile Include="camera.cpp" />
@@ -408,6 +409,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_WINDOWS -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_NO_DEBUG -DUNICODE -DWIN32 -DWIN64 -DQT_OPENGL_LIB -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQCUSTOMPLOT_USE_LIBRARY -DQT_DLL  "-I." "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\mkspecs\win32-msvc2012" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtPrintSupport" "-I$(QTDIR)\include\QtWidgets" "-I$(ASSIMP_HOME)\include" "-I$(DXFLIB_HOME)\src" "-I$(QCPDIR)\." "-I.\GeneratedFiles" "-I$(SolutionDir)\ClothMotion\taucs\include" "-I$(NOINHERIT)\."</Command>
     </CustomBuild>
+    <ClInclude Include="AVIGenerator.h" />
     <ClInclude Include="ClothMotion\alglib\alglibinternal.h" />
     <ClInclude Include="ClothMotion\alglib\alglibmisc.h" />
     <ClInclude Include="ClothMotion\alglib\ap.h" />
@@ -824,6 +826,14 @@
     <None Include="images\simulate.png">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="images\graphics.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </Image>
+    <Image Include="images\picture.png">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </Image>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

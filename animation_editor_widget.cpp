@@ -520,7 +520,7 @@ RemixerWidget::RemixerWidget( QWidget *parent /*= 0*/ )
 
     // 动画时间线
     timer_ = new QTimer(this);
-    timer_->start(AnimationClip::SAMPLE_SLICE);
+	timer_->start(/*AnimationClip::SAMPLE_SLICE*/(1.f / play_speed_) * 10.f);
     createConnections();
 
     updateTrackEditUI();
@@ -786,6 +786,7 @@ void RemixerWidget::changeSpeed( int index )
     default: 
         qDebug() << "Invalid index"; 
     }
+	timer_->start((1.f / play_speed_) * 10.f);
 }
 
 double RemixerWidget::playSpeed() const

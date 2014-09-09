@@ -97,6 +97,20 @@ void Scene::initialize()
 			glfunctions_->glGetSubroutineIndex( shader->programId(), GL_FRAGMENT_SHADER, display_mode_names_.at( i ).toLatin1() );
 	}
 
+	std::ifstream ifs("parameters/sample_parameter.txt");
+	std::string label;
+	if(ifs.is_open())
+	{
+		ifs >> label >> AnimationClip::SAMPLE_SLICE;
+		ifs >> label >> AnimationClip::SIM_SLICE;
+	}
+	ifs.close();
+
+	avatar_sampler_->create();
+	avatar_sampler_->setMinificationFilter( GL_LINEAR );
+	avatar_sampler_->setMagnificationFilter( GL_LINEAR );
+	avatar_sampler_->setWrapMode( Sampler::DirectionS, GL_REPEAT );//GL_CLAMP_TO_EDGE
+	avatar_sampler_->setWrapMode( Sampler::DirectionT, GL_REPEAT );//GL_CLAMP_TO_EDGE
 	// prepare floor rendering data
 	//prepareFloor();
 
@@ -159,7 +173,6 @@ void Scene::render()
 
 			if(clothes_.size())
 			{
-				glfunctions_->glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &display_mode_subroutines_[1]);
 				renderClothes(shading_display_shader);
 			}
 
@@ -316,10 +329,18 @@ void Scene::renderClothes(QOpenGLShaderProgramPtr & shader) const
 {
 	for(size_t i = 0; i < clothes_.size(); ++i)
 	{
-		QVector4D color = color_[i];
-		if(i == hover_cloth_index_)
-			color = color + QVector4D(0.2f, 0.2f, 0.2f, 0.0f);
-		shader->setUniformValue("Color", color);
+		if(cloth_textures_[i].isNull())
+		{
+			glfunctions_->glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &display_mode_subroutines_[1]);
+			QVector4D color = color_[i];
+			if(i == hover_cloth_index_)
+				color = color + QVector4D(0.2f, 0.2f, 0.2f, 0.0f);
+			shader->setUniformValue("Color", color);
+		}
+		else
+		{
+			cloth_textures_[i]->bind();
+		}
 		clothes_[i]->cloth_update_buffer();
 		QOpenGLVertexArrayObject::Binder binder( clothes_[i]->vao() );
 		glDrawArrays(GL_TRIANGLES, 0, clothes_[i]->face_count() * 3);
@@ -387,6 +408,11 @@ void Scene::updateAvatarAnimation(const Animation* anim, int elapsed_time)
 	}
 }
 
+void Scene::updateClothAnimation(int frame)
+{
+	cloth_handler_->load_frame(frame);
+}
+
 void Scene::restoreToBindpose()
 {
 	avatar_->setBindposed(true);
@@ -441,11 +467,6 @@ void Scene::prepareAvatar()
 	}
 
 	// 准备纹理数据
-	avatar_sampler_->create();
-	avatar_sampler_->setMinificationFilter( GL_LINEAR );
-	avatar_sampler_->setMagnificationFilter( GL_LINEAR );
-	avatar_sampler_->setWrapMode( Sampler::DirectionS, GL_REPEAT );//GL_CLAMP_TO_EDGE
-	avatar_sampler_->setWrapMode( Sampler::DirectionT, GL_REPEAT );//GL_CLAMP_TO_EDGE
 	QImage avatarImage(avatar_->diffuse_tex_path_);//
 	glfunctions_->glActiveTexture(GL_TEXTURE0);
 
@@ -680,6 +701,7 @@ void Scene::importCloth(QString file_name)
 	Cloth * cloth = new Cloth(simcloth);
 	cloth_handler_->add_clothes_to_handler(simcloth);
 	clothes_.push_back(cloth);
+	cloth_textures_.push_back(TexturePtr(NULL));
 	color_.push_back(ori_color_[(clothes_.size() - 1) % 4]);
 	prepareCloth();
 	cur_cloth_index_ = clothes_.size() - 1;
@@ -831,4 +853,18 @@ void Scene::writeAFrame(int frame)
 void Scene::finishedSimulate()
 {
 	replay_ = true;
+}
+
+void Scene::setClothTexture(QString texture_name)
+{
+	QImage avatarImage(texture_name);//
+	glfunctions_->glActiveTexture(GL_TEXTURE0);
+
+	if(cloth_textures_[cur_cloth_index_].isNull())
+		cloth_textures_[cur_cloth_index_] = TexturePtr(new Texture);
+	cloth_textures_[cur_cloth_index_]->create();
+	cloth_textures_[cur_cloth_index_]->bind();
+	cloth_textures_[cur_cloth_index_]->setImage(avatarImage);
+	shading_display_material_->setTextureUnitConfiguration(0, cloth_textures_[cur_cloth_index_], avatar_sampler_, QByteArrayLiteral("Tex1"));
+	glfunctions_->glActiveTexture( GL_TEXTURE0 );
 }

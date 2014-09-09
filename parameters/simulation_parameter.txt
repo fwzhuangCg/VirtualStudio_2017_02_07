@@ -9,3 +9,6 @@ drag 0.0
 
 friction 0.9
 obs_friction 0.9
+
+repulsion_thickness 5e-3
+collision_stiffness 1e6

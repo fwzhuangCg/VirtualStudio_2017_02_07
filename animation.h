@@ -262,7 +262,7 @@ class AnimationClip : public QGraphicsObject
 
 public:
 	enum { SECOND_WIDTH = 100 }; // 每一秒对应宽度为100像素
-    enum { SAMPLE_SLICE = 20, SIM_SLICE = 2 };	 // 采样时间片20ms, 模拟时间片2ms 
+    static int SAMPLE_SLICE, SIM_SLICE;	 // 采样时间片默认20ms, 模拟时间片默认2ms, 具体参看配置文件 
 	enum { Type = UserType + 1 };
 
 	AnimationClip(QMenu* contex_menu, QGraphicsScene *scene, Animation* anim, AnimationTrack* track, int x, int y);
@@ -515,6 +515,7 @@ private:
 	bool createSkinVBO();
     bool createSkeletonVBO();
     bool loadMH2CMUJointMap();
+	void initSimParameters();
 
 	const aiScene*			ai_scene_;	    // ASSIMP场景
 	Joint*					root_;			// 根关节
@@ -559,6 +560,12 @@ private:
     QMap<QString, QString>  mh2cmu_joint_map_;  // makehuman --> cmu mocap关节名称映射表
     QMap<QString, int>      mh2cmu_channel_map_;
     ASFAMCImporter*         asfamc_importer_;
+
+	// 吴宁枫添加的模拟位移缩放数据，算法需要特定的模型坐标规模，以及相对原点位置
+	double scale_factor_;
+	double xtranslate_;
+	double ytranslate_;
+	double ztranslate_;
 };
 
 #endif //ANIMATION_H

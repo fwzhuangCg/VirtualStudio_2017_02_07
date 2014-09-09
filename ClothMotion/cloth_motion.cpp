@@ -95,7 +95,7 @@ void ClothHandler::add_clothes_to_handler(const char * filename)
 	SmtClothPtr cloth(new SimCloth);
 	load_obj(cloth->mesh, filename);
 
-	std::fstream fs("patameters/parameter.txt");
+	std::fstream fs("parameters/parameter.txt");
 	assert(fs.is_open());
 
 	std::string tab;
@@ -250,7 +250,7 @@ void ClothHandler::init_simulation()
 	if(sim_->cloths.empty())
 		return;
 
-	std::fstream fs("patameters/simulation_parameter.txt");
+	std::fstream fs("parameters/simulation_parameter.txt");
 	assert(fs.is_open());
 
 	// init time frame
@@ -277,8 +277,8 @@ void ClothHandler::init_simulation()
 	fs >> label >> sim_->obs_friction;
 
 	// init magic
-	magic.repulsion_thickness = 5e-3;
-	magic.collision_stiffness = 1e6;
+	fs >> label >> magic.repulsion_thickness;
+	fs >> label >> magic.collision_stiffness;
 
 	// functional ability
 	bool has_strain_limits = false, has_plasticity = false;
@@ -452,7 +452,7 @@ SmtClothPtr ClothHandler::load_cloth_from_obj(const char * filename)
 	SmtClothPtr cloth(new SimCloth);
 	load_obj(cloth->mesh, filename);
 
-	std::fstream fs("patameters/parameter.txt");
+	std::fstream fs("parameters/parameter.txt");
 	assert(fs.is_open());
 
 	std::string tab;

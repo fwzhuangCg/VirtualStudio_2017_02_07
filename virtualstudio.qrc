@@ -42,5 +42,7 @@
         <file>shaders/skinning.vert</file>
         <file>config/jointMap.cfg</file>
         <file>images/simulate.png</file>
+        <file>images/graphics.png</file>
+        <file>images/picture.png</file>
     </qresource>
 </RCC>

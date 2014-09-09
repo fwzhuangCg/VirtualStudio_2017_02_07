@@ -3,9 +3,11 @@
 
 #include <QWindow>
 #include <QTime>
+#include "AVIGenerator.h"
 
 class Scene;
 class Animation;
+
 class SimulationWindow : public QWindow
 {
 	Q_OBJECT
@@ -16,6 +18,7 @@ public:
 	void initializeGL();
 	void paintGL();
 	void paintForPick();
+	void record(const Animation* anim);
 
 public slots:
 	void updateAnimation(const Animation* anim, int frame);
@@ -41,6 +44,10 @@ private:
 	bool m_leftButtonPressed;
 	QPoint cur_pos_;
 	QPoint prev_pos_;
+
+	AVIGenerator * AviGen;
+	LPBITMAPINFOHEADER lpbih;
+	BYTE * bmBits;
 };
 
 #endif // SIMULATION_WINDOW_H

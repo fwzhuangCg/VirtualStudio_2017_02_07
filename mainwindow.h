@@ -58,6 +58,8 @@ private slots:
 	// wnf添加，导入OBJ服装
 	void fileImportCloth();
 	void startSimulate();
+	void changeClothColor();
+	void changeClothTexture();
 
 private:
 	// 仿真相关成员
@@ -77,6 +79,8 @@ private:
 	QAction* design_showgrid_action_;
 	QAction* design_add_seamline_action_;
 	QAction* design_generate_cloth_action_;
+	QAction* design_cloth_color_;
+	QAction* design_cloth_texture_;
 	QAction* start_simulate_;
 	
 	// wnf添加，导入OBJ服装

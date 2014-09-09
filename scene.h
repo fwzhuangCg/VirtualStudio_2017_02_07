@@ -50,6 +50,7 @@ public:
 	void importAvatar(const QString& filename);
 
 	void updateAvatarAnimation(const Animation* anim, int elapsed_time);	// 更新avatar动画
+	void updateClothAnimation(int frame);
 	void updateAvatar2Simulation();
 	void restoreToBindpose();						                // 切换到绑定姿态
 
@@ -66,6 +67,10 @@ public:
 	void simulateStep();
 	void writeAFrame(int frame);
 	void finishedSimulate();
+
+	bool isReplay() {return replay_;}
+	void setClothColor(QVector4D color) { color_[cur_cloth_index_] = color; cloth_textures_[cur_cloth_index_].clear(); }
+	void setClothTexture(QString texture_name);
 
 	enum InteractionMode 
 	{ 
@@ -122,6 +127,7 @@ private:
 	QVector<Light*>	lights_;	// 光源
 	Avatar*			avatar_;	// 模特
 	QVector<Cloth*>	clothes_;	// 布料
+	QVector<TexturePtr>	cloth_textures_;	// 布料
 
 	// 装饰性对象
 	DecorativeObject* floor_;
@@ -160,7 +166,6 @@ private:
 	
 	// wnf添加，恢复CPU蒙皮
 	bool gpu_skinning_;
-
 	void resetTransform(float * transform);
 };
 
