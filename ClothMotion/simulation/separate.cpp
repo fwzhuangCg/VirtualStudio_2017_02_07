@@ -112,7 +112,7 @@ Vec3 old_pos (const Face *face, const Bary &b) {
 	Vec2 u = b[0]*face->v[0]->u + b[1]*face->v[1]->u + b[2]*face->v[2]->u;
 	int m;
 	for (m = 0; m < ::meshes->size(); m++)
-		if ((*::meshes)[m]->faces[face->index] == face)
+		if (face->index < (*::meshes)[m]->faces.size() && (*::meshes)[m]->faces[face->index] == face)
 			break;
 	Face *old_face = get_enclosing_face(*(*::old_meshes)[m], u);
 	Bary old_b = get_barycentric_coords(u, old_face);
