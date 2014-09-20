@@ -14,6 +14,8 @@ struct Velocity;
 
 typedef std::tr1::shared_ptr<SimCloth> SmtClothPtr;
 
+class QPainterPath;
+
 class ClothHandler
 {
 public:
@@ -58,9 +60,11 @@ public:
 	size_t cloth_num();
 
 	static SmtClothPtr load_cloth_from_obj(const char * filename);
+	static SmtClothPtr load_cloth_from_contour(QPainterPath &path);
 
 private:
 	void init_simulation();
+	static void init_cloth(SimCloth &cloth);
 	static void apply_velocity(Mesh &mesh, const Velocity &vel);
 
 	std::tr1::shared_ptr<Simulation> sim_;

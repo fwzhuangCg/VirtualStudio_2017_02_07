@@ -388,6 +388,7 @@
     <ClCompile Include="scene.cpp" />
     <ClCompile Include="simulation_window.cpp" />
     <ClCompile Include="texture.cpp" />
+    <ClCompile Include="triangulate.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="abstractscene.h" />
@@ -460,6 +461,7 @@
     <ClInclude Include="ClothMotion\simulation\util.h" />
     <ClInclude Include="ClothMotion\simulation\vectors.h" />
     <ClInclude Include="ClothMotion\timer.h" />
+    <ClInclude Include="triangulate.h" />
     <ClInclude Include="ui_mocapimportdialog.h" />
     <CustomBuild Include="animation.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o "$(ConfigurationName)\moc_%(Filename).cpp"  -D_WINDOWS -DUNICODE -DWIN32 -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DNDEBUG -DQT_OPENGL_LIB -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_DLL  "-I." "-I$(QTDIR)\include" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtCore" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2012" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtPrintSupport" "-I$(QTDIR)\include\QtWidgets" "-I.\GeneratedFiles"</Command>

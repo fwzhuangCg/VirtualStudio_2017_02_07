@@ -302,6 +302,9 @@
     <ClCompile Include="AVIGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="triangulate.cpp">
+      <Filter>ClothMotion</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="abstractscene.h">
@@ -507,6 +510,9 @@
     </ClInclude>
     <ClInclude Include="AVIGenerator.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="triangulate.h">
+      <Filter>ClothMotion</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

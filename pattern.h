@@ -103,7 +103,7 @@ public:
     enum { Type = UserType + 3 };
     int type() const { return Type; }
 
-    Panel(QGraphicsScene *scene = 0);
+    Panel(const QPainterPath &path, QGraphicsScene *scene = 0);
 
     void addSeamLine(SeamLine *seamline);
     void removeSeamLine(SeamLine *seamline);
@@ -115,14 +115,19 @@ public:
     QColor color() const { return color_; }
     QString toolTip() const { return tool_tip_; }
 
+	
+
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
 private:
+	void setPath(const QPainterPath &path);
+
     QColor  color_;
     QString tool_tip_;
     QMenu*  context_menu_;
+	QPainterPath contour_;
 
     QList<SeamLine*>        seam_lines_;
 };
@@ -150,6 +155,8 @@ public:
 	void setGridVisible(bool val) { grid_visible_ = val; }
 
 	void setMode(Mode mode);
+
+	QList<Panel*> getPanels(){return panels_;}
 
 signals:
 	void panelAdded(Panel *item);

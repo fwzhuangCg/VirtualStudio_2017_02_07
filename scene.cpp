@@ -16,6 +16,7 @@
 #include "light.h"
 #include "gadget.h"
 #include "bounding_volume.h"
+#include "pattern.h"
 
 /************************************************************************/
 /* ·ÂÕæ³¡¾°                                                              */
@@ -705,6 +706,11 @@ void Scene::importCloth(QString file_name)
 	color_.push_back(ori_color_[(clothes_.size() - 1) % 4]);
 	prepareCloth();
 	cur_cloth_index_ = clothes_.size() - 1;
+}
+
+void Scene::generateCloth(Panel &panel)
+{
+
 }
 
 void Scene::rotateCloth(const QPoint& prevPos, const QPoint& curPos)

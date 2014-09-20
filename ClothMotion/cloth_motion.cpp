@@ -3,6 +3,7 @@
 #include "simulation\separateobs.h"
 #include "simulation\io.h"
 #include "simulation\magic.h"
+#include "triangulate.h"
 #include <assert.h>
 #include <QProgressDialog>
 #include <QString>
@@ -447,11 +448,8 @@ void ClothHandler::load_frame(int frame)
 		clothes_[i]->mesh = clothes_frame_[i][frame]->mesh;
 }
 
-SmtClothPtr ClothHandler::load_cloth_from_obj(const char * filename)
+void ClothHandler::init_cloth(SimCloth &cloth)
 {
-	SmtClothPtr cloth(new SimCloth);
-	load_obj(cloth->mesh, filename);
-
 	std::fstream fs("parameters/parameter.txt");
 	assert(fs.is_open());
 
@@ -469,14 +467,14 @@ SmtClothPtr ClothHandler::load_cloth_from_obj(const char * filename)
 	rot = Vec<4>(v1, v2, v3, v4); 
 	transform.rotation = Quaternion::from_axisangle(Vec3(rot[1], rot[2], rot[3]), rot[0]*M_PI/180);
 	if (transform.scale != 1.0f)
-		for (int v = 0; v < cloth->mesh.verts.size(); v++)
-			cloth->mesh.verts[v]->u *= transform.scale;
-	compute_ms_data(cloth->mesh);
-	apply_transformation(cloth->mesh, transform);
+		for (int v = 0; v < cloth.mesh.verts.size(); v++)
+			cloth.mesh.verts[v]->u *= transform.scale;
+	compute_ms_data(cloth.mesh);
+	apply_transformation(cloth.mesh, transform);
 
 	// init velocity
 	Velocity velocity;
-	apply_velocity(cloth->mesh, velocity);
+	apply_velocity(cloth.mesh, velocity);
 
 	// init material
 	std::string mat_file;
@@ -539,17 +537,37 @@ SmtClothPtr ClothHandler::load_cloth_from_obj(const char * filename)
 	fs >> tab >> material->strain_max;
 	material->yield_curv = infinity;
 	fs >> tab >> material->weakening;
-	cloth->materials.push_back(material);
+	cloth.materials.push_back(material);
 
 	// init remeshing parameter
-	fs >> tab >> cloth->remeshing.refine_angle;
-	fs >> tab >> cloth->remeshing.refine_compression;
-	fs >> tab >> cloth->remeshing.refine_velocity;
-	fs >> tab >> cloth->remeshing.size_min;
-	fs >> tab >> cloth->remeshing.size_max;
-	fs >> tab >> cloth->remeshing.aspect_min;
+	fs >> tab >> cloth.remeshing.refine_angle;
+	fs >> tab >> cloth.remeshing.refine_compression;
+	fs >> tab >> cloth.remeshing.refine_velocity;
+	fs >> tab >> cloth.remeshing.size_min;
+	fs >> tab >> cloth.remeshing.size_max;
+	fs >> tab >> cloth.remeshing.aspect_min;
 
 	fs.close();
-	// save to simulation
+}
+
+SmtClothPtr ClothHandler::load_cloth_from_obj(const char * filename)
+{
+	SmtClothPtr cloth(new SimCloth);
+	load_obj(cloth->mesh, filename);
+
+	init_cloth(*cloth);
+	return cloth;
+}
+
+SmtClothPtr ClothHandler::load_cloth_from_contour(QPainterPath &path)
+{
+	SmtClothPtr cloth(new SimCloth);
+	QPolygonF polygon = path.toFillPolygon();
+	Vector2dVector contour;
+	for(int i = 0; i < polygon.size(); ++i) {
+		QPointF p = polygon[i];
+		contour.push_back(Vector2d(p.x(), p.y()));
+	}
+	init_cloth(*cloth);
 	return cloth;
 }

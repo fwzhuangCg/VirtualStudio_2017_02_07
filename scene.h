@@ -22,6 +22,7 @@ class Light;
 struct DecorativeObject;
 class QOpenGLFunctions_4_0_Core;
 class ClothHandler;
+class Panel;
 /************************************************************************/
 /* 仿真场景                                                              */
 /************************************************************************/
@@ -104,6 +105,7 @@ public:
 
 	// wnf添加，导入OBJ服装
 	void importCloth(QString file_name);
+	void generateCloth(Panel &panel);
 	void rotateCloth(const QPoint& prevPos, const QPoint& curPos);
 	void moveCloth(float dx, float dy);
 	void zoomCloth(float factor);
