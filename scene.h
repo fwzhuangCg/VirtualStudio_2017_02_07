@@ -64,8 +64,8 @@ public:
 	bool pick(const QPoint& pt);    // 拾取场景中的物体
 	void pickCloth(BYTE red, bool hover);
 	void initAvatar2Simulation();
-	void startSimulate();
-	void simulateStep();
+	bool startSimulate();
+	bool simulateStep();
 	void writeAFrame(int frame);
 	void finishedSimulate();
 
@@ -169,6 +169,7 @@ private:
 	// wnf添加，恢复CPU蒙皮
 	bool gpu_skinning_;
 	void resetTransform(float * transform);
+	void prepare_scene_cloth(SmtClothPtr simcloth);
 };
 
 // UI相关类

@@ -113,7 +113,7 @@ void SimulationWindow::mouseMoveEvent( QMouseEvent *event )
 		}
 		else if (event->buttons() & Qt::RightButton)
 		{
-			scene_->moveCloth(dx, dy);
+			scene_->moveCloth(-dx, dy);
 		}
 		else
 		{
@@ -261,14 +261,20 @@ void SimulationWindow::startSimulate(const Animation* anim)
 		{
 			scene_->updateAvatarAnimation(anim, 0);
 			scene_->initAvatar2Simulation();
-			scene_->startSimulate();
+			if(!scene_->startSimulate()) {
+				process.cancel();
+				break;
+			}
 			inited = true;
 		}
 		else
 		{
 			scene_->updateAvatarAnimation(anim, i * AnimationClip::SIM_SLICE);
 			scene_->updateAvatar2Simulation();
-			scene_->simulateStep();
+			if(!scene_->simulateStep()) {
+				process.cancel();
+				break;
+			}
 		}
 
 		if(i % factor == 0)

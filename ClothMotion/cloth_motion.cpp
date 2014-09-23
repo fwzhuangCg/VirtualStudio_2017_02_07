@@ -308,7 +308,7 @@ void ClothHandler::init_simulation()
 	fs.close();
 }
 
-void ClothHandler::begin_simulate()
+bool ClothHandler::begin_simulate()
 {
 	if(clothes_frame_.size())
 	{
@@ -321,16 +321,17 @@ void ClothHandler::begin_simulate()
 	clothes_frame_.resize(clothes_.size());
 	init_simulation();
 	prepare(*sim_);
-	relax_initial_state(*sim_);
+	return relax_initial_state(*sim_);
 }
 
-void ClothHandler::sim_next_step()
+bool ClothHandler::sim_next_step()
 {
 	fps_->tick();
-	advance_step(*sim_);
+	if(!advance_step(*sim_))
+		return false;
 	//separate_obstacles(sim_->obstacle_meshes, sim_->cloth_meshes);
 	fps_->tock();
-
+	return true;
 	// end condition
 	/*if (sim_->time >= sim_->end_time || sim_->frame >= sim_->end_frame)
 	exit(EXIT_SUCCESS);*/
@@ -559,15 +560,17 @@ SmtClothPtr ClothHandler::load_cloth_from_obj(const char * filename)
 	return cloth;
 }
 
-SmtClothPtr ClothHandler::load_cloth_from_contour(QPainterPath &path)
+SmtClothPtr ClothHandler::load_cloth_from_contour(const QPainterPath &path)
 {
 	SmtClothPtr cloth(new SimCloth);
 	QPolygonF polygon = path.toFillPolygon();
-	Vector2dVector contour;
-	for(int i = 0; i < polygon.size(); ++i) {
+	Vector2dVector contour, zdmesh;
+	for(int i = 0; i < polygon.size() - 1; ++i) {
 		QPointF p = polygon[i];
 		contour.push_back(Vector2d(p.x(), p.y()));
 	}
+	Triangulate::Process(contour, zdmesh);
+	generate_obj(cloth->mesh, zdmesh);
 	init_cloth(*cloth);
 	return cloth;
 }

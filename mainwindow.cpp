@@ -233,6 +233,8 @@ void MainWindow::createConnections()
 
 	connect(design_cloth_color_, SIGNAL(triggered()), this, SLOT(changeClothColor()));
 	connect(design_cloth_texture_, SIGNAL(triggered()), this, SLOT(changeClothTexture()));
+
+	connect(design_generate_cloth_action_, SIGNAL(triggered()), this, SLOT(generateCloth()));
 }
 
 bool MainWindow::okToContinue()
@@ -360,7 +362,11 @@ void MainWindow::addSeamline()
 
 void MainWindow::generateCloth()
 {
-
+	QList<Panel*> & panels = pattern_scene_->getPanels();
+	for(QList<Panel*>::iterator iter = panels.begin(); iter != panels.end(); ++iter) {
+		scene_->generateCloth(**iter);
+	}
+	simulation_view_->paintGL();
 }
 
 void MainWindow::fileImportCloth()

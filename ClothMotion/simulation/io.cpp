@@ -33,6 +33,7 @@
 #include <QTextStream>
 #include <QFile>
 
+
 using namespace std;
 
 // OBJ meshes
@@ -83,7 +84,37 @@ void triangle_to_obj (const string &inname, const string &outname) {
 	}
 }
 
+void generate_obj(Mesh &mesh, const Vector2dVector &zdmesh)
+{
+	delete_mesh(mesh);
+	float maxX = zdmesh[0].GetX(), maxY = zdmesh[0].GetY(), minX = maxX, minY = maxY;
 
+	for(Vector2dVector::const_iterator iter = zdmesh.begin(); iter != zdmesh.end(); ++iter) {
+		maxX = max(iter->GetX(), maxX);
+		minX = min(iter->GetX(), minX);
+		maxY = max(iter->GetY(), maxY);
+		minY = min(iter->GetY(), minY);
+	}
+
+	for(Vector2dVector::const_iterator iter = zdmesh.begin(); iter != zdmesh.end();) {
+		vector<Vert*> vertlist;
+		int count = 3;
+		while(count--) {
+			float x = iter->GetX(), y = iter->GetY();
+			Vert * v = new Vert(Vec2((x - minX) / (maxX - minX), (y - minY) / (maxY - minY)));
+			Node * n = new Node(Vec3((x - minX - (maxX - minX) / 2) / 100, 0, (y - minY - (maxY - minY) / 2) / 100));
+			connectvn(v, n);
+			mesh.add(v);
+			mesh.add(n);
+			vertlist.push_back(v);
+			++iter;
+		}
+		Face * f = new Face(vertlist[0], vertlist[1], vertlist[2]);
+		mesh.add(f);
+	}
+	mark_nodes_to_preserve(mesh);
+	compute_ms_data(mesh);
+}
 
 void load_obj (Mesh &mesh, const string &filename) {
 	delete_mesh(mesh);

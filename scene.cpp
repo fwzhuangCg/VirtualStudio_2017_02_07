@@ -696,9 +696,8 @@ const QVector4D Scene::ori_color_[4] = {
 	QVector4D(0.5f, 1.0f, 0.5f, 1.0f),
 	QVector4D(1.0f, 0.5f, 0.5f, 1.0f) };
 
-void Scene::importCloth(QString file_name)
+void Scene::prepare_scene_cloth(SmtClothPtr simcloth)
 {
-	SmtClothPtr simcloth = ClothHandler::load_cloth_from_obj(file_name.toStdString().c_str());
 	Cloth * cloth = new Cloth(simcloth);
 	cloth_handler_->add_clothes_to_handler(simcloth);
 	clothes_.push_back(cloth);
@@ -708,9 +707,16 @@ void Scene::importCloth(QString file_name)
 	cur_cloth_index_ = clothes_.size() - 1;
 }
 
+void Scene::importCloth(QString file_name)
+{
+	SmtClothPtr simcloth = ClothHandler::load_cloth_from_obj(file_name.toStdString().c_str());
+	prepare_scene_cloth(simcloth);
+}
+
 void Scene::generateCloth(Panel &panel)
 {
-
+	SmtClothPtr simcloth = ClothHandler::load_cloth_from_contour(panel.path());
+	prepare_scene_cloth(simcloth);
 }
 
 void Scene::rotateCloth(const QPoint& prevPos, const QPoint& curPos)
@@ -841,14 +847,14 @@ void Scene::updateAvatar2Simulation()
 	delete[] position;
 }
 
-void Scene::startSimulate()
+bool Scene::startSimulate()
 {
-	cloth_handler_->begin_simulate();
+	return cloth_handler_->begin_simulate();
 }
 
-void Scene::simulateStep()
+bool Scene::simulateStep()
 {
-	cloth_handler_->sim_next_step();
+	return cloth_handler_->sim_next_step();
 }
 
 void Scene::writeAFrame(int frame)

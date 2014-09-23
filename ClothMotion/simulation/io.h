@@ -28,9 +28,11 @@
 #define IO_HPP
 
 #include "mesh.h"
+#include "..\triangulate.h"
 
 void triangle_to_obj (const std::string &infile, const std::string &outfile);
 
+void generate_obj(Mesh &mesh, const Vector2dVector &zdmesh);
 void load_obj (Mesh &mesh, const std::string &filename);
 void load_objs (std::vector<Mesh*> &meshes, const std::string &prefix);
 

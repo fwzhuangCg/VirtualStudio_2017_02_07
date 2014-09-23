@@ -71,11 +71,11 @@ struct Simulation {
 
 void prepare (Simulation &sim);
 
-void relax_initial_state (Simulation &sim);
+bool relax_initial_state (Simulation &sim);
 
 void advance_frame (Simulation &sim);
 
-void advance_step (Simulation &sim);
+bool advance_step (Simulation &sim);
 
 // Helper functions
 

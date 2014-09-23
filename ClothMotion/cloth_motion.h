@@ -46,8 +46,8 @@ public:
 	std::vector<float> get_normal() { return normal_buffer_; }
 	std::vector<float> get_texcoord() { return texcoord_buffer_; }
 
-	void begin_simulate();
-	void sim_next_step();
+	bool begin_simulate();
+	bool sim_next_step();
 	bool load_cmfile_to_replay(const char * fileName);
 	void load_frame(int frame);
 	void transform_cloth(const float * transform, size_t clothIndex);
@@ -60,7 +60,7 @@ public:
 	size_t cloth_num();
 
 	static SmtClothPtr load_cloth_from_obj(const char * filename);
-	static SmtClothPtr load_cloth_from_contour(QPainterPath &path);
+	static SmtClothPtr load_cloth_from_contour(const QPainterPath &path);
 
 private:
 	void init_simulation();

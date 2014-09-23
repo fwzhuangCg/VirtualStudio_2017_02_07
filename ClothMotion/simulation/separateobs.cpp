@@ -72,7 +72,7 @@ vector<Vec3> face_normals (const vector<Mesh*> &meshes) {
 	return n;
 }
 
-void separate_obstacles (vector<Mesh*> &obs_meshes,
+bool separate_obstacles (vector<Mesh*> &obs_meshes,
 						 const vector<Mesh*> &meshes) {
 	::obs_meshes = &obs_meshes;
 	::meshes = &meshes;
@@ -97,6 +97,7 @@ void separate_obstacles (vector<Mesh*> &obs_meshes,
 	}
 	if (iter == max_iter) {
 		QMessageBox::critical(0, "error", "Initial separation failed to converge!");
+		return false;
 		//exit(1);
 	}
 	for (int m = 0; m < obs_meshes.size(); m++) {
@@ -105,6 +106,7 @@ void separate_obstacles (vector<Mesh*> &obs_meshes,
 	}
 	destroy_accel_structs(accs);
 	destroy_accel_structs(obs_accs);
+	return true;
 }
 
 Vec3 pos (const Face *face, const Bary &b) {
@@ -388,7 +390,7 @@ void SeparationOpt::finalize (const double *x) const {
 
 };
 
-void separate_obstacles (vector<Mesh*> &obs_meshes,
+bool separate_obstacles (vector<Mesh*> &obs_meshes,
 						 const vector<Mesh*> &meshes) {
-	SO::separate_obstacles(obs_meshes, meshes);
+	return SO::separate_obstacles(obs_meshes, meshes);
 }

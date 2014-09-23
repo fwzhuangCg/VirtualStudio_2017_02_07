@@ -62,7 +62,7 @@ vector<Ixn> find_intersections (const vector<AccelStruct*> &accs,
 
 void solve_ixns (const vector<Ixn> &ixns);
 
-void separate (vector<Mesh*> &meshes, const vector<Mesh*> &old_meshes,
+bool separate (vector<Mesh*> &meshes, const vector<Mesh*> &old_meshes,
 			   const vector<Mesh*> &obs_meshes) {
 	::meshes = &meshes;
 	::old_meshes = &old_meshes;
@@ -87,6 +87,7 @@ void separate (vector<Mesh*> &meshes, const vector<Mesh*> &old_meshes,
 	}
 	if (iter == max_iter) {
 		QMessageBox::critical(0, "error", "Post-remeshing separation failed to converge!");
+		return false;
 		//debug_save_meshes(meshes, "meshes");
 		//debug_save_meshes(old_meshes, "oldmeshes");
 		//debug_save_meshes(obs_meshes, "obsmeshes");
@@ -98,6 +99,7 @@ void separate (vector<Mesh*> &meshes, const vector<Mesh*> &old_meshes,
 	}
 	destroy_accel_structs(accs);
 	destroy_accel_structs(obs_accs);
+	return true;
 }
 
 Vec3 pos (const Face *face, const Bary &b) {

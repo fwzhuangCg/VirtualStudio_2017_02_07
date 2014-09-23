@@ -99,7 +99,7 @@ vector<Constraint> impact_constraints (const vector<ImpactZone*> &zones);
 ostream &operator<< (ostream &out, const Impact &imp);
 ostream &operator<< (ostream &out, const ImpactZone *zone);
 
-void collision_response (vector<Mesh*> &meshes, const vector<Constraint*> &cons,
+bool collision_response (vector<Mesh*> &meshes, const vector<Constraint*> &cons,
 						 const vector<Mesh*> &obs_meshes) {
 	::meshes = &meshes;
 	::obs_meshes = &obs_meshes;
@@ -137,6 +137,7 @@ void collision_response (vector<Mesh*> &meshes, const vector<Constraint*> &cons,
 	}
 	if (iter == max_iter) {
 		QMessageBox::critical(0, "error", "Collision resolution failed to converge!");
+		return false;
 		//debug_save_meshes(meshes, "meshes");
 		//debug_save_meshes(obs_meshes, "obsmeshes");
 		//exit(1);
@@ -153,6 +154,7 @@ void collision_response (vector<Mesh*> &meshes, const vector<Constraint*> &cons,
 		delete zones[z];
 	destroy_accel_structs(accs);
 	destroy_accel_structs(obs_accs);
+	return true;
 }
 
 void update_active (const vector<AccelStruct*> &accs,

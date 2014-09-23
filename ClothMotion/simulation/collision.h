@@ -30,7 +30,7 @@
 #include "cmcloth.h"
 #include "constraint.h"
 
-void collision_response (std::vector<Mesh*> &meshes,
+bool collision_response (std::vector<Mesh*> &meshes,
                          const std::vector<Constraint*> &cons,
                          const std::vector<Mesh*> &obs_meshes);
 

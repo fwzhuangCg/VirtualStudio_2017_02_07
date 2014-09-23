@@ -54,10 +54,10 @@ static const int proximity = Simulation::Proximity,
 void physics_step (Simulation &sim, const vector<Constraint*> &cons);
 void plasticity_step (Simulation &sim);
 void strainlimiting_step (Simulation &sim, const vector<Constraint*> &cons);
-void strainzeroing_step (Simulation &sim);
-void equilibration_step (Simulation &sim);
-void collision_step (Simulation &sim);
-void remeshing_step (Simulation &sim, bool initializing=false);
+bool strainzeroing_step (Simulation &sim);
+bool equilibration_step (Simulation &sim);
+bool collision_step (Simulation &sim);
+bool remeshing_step (Simulation &sim, bool initializing=false);
 
 void validate_handles (const Simulation &sim);
 
@@ -76,21 +76,28 @@ void prepare (Simulation &sim) {
 	sim.step = 1;
 }
 
-void relax_initial_state (Simulation &sim) {
+bool relax_initial_state (Simulation &sim) {
 	validate_handles(sim);
 	if (::magic.preserve_creases)
 		for (int c = 0; c < sim.cloths.size(); c++)
 			reset_plasticity(*sim.cloths[c]);
 	bool equilibrate = true;
 	if (equilibrate) {
-		equilibration_step(sim);
-		remeshing_step(sim, true);
-		equilibration_step(sim);
+		if(!equilibration_step(sim))
+			return false;
+		if(!remeshing_step(sim, true))
+			return false;
+		if(!equilibration_step(sim))
+			return false;
 	} else {
-		remeshing_step(sim, true);
-		strainzeroing_step(sim);
-		remeshing_step(sim, true);
-		strainzeroing_step(sim);
+		if(!remeshing_step(sim, true))
+			return false;
+		if(!strainzeroing_step(sim))
+			return false;
+		if(!remeshing_step(sim, true))
+			return false;
+		if(!strainzeroing_step(sim))
+			return false;
 	}
 	if (::magic.preserve_creases)
 		for (int c = 0; c < sim.cloths.size(); c++)
@@ -98,6 +105,7 @@ void relax_initial_state (Simulation &sim) {
 	::magic.preserve_creases = false;
 	if (::magic.fixed_high_res_mesh)
 		sim.enabled[remeshing] = false;
+	return true;
 }
 
 void validate_handles (const Simulation &sim) {
@@ -116,14 +124,14 @@ vector<Constraint*> get_constraints (Simulation &sim, bool include_proximity);
 void delete_constraints (const vector<Constraint*> &cons);
 void update_obstacles (Simulation &sim, bool update_positions=true);
 
-void advance_step (Simulation &sim);
+bool advance_step (Simulation &sim);
 
 void advance_frame (Simulation &sim) {
 	for (int s = 0; s < sim.frame_steps; s++)
 		advance_step(sim);
 }
 
-void advance_step (Simulation &sim) {
+bool advance_step (Simulation &sim) {
 	sim.time += sim.step_time;
 	sim.step++;
 	//update_obstacles(sim, false);
@@ -131,12 +139,15 @@ void advance_step (Simulation &sim) {
 	physics_step(sim, cons);
 	plasticity_step(sim);
 	strainlimiting_step(sim, cons);
-	collision_step(sim);
+	if(!collision_step(sim))
+		return false;
 	if (sim.step % sim.frame_steps == 0) {
-		remeshing_step(sim);
+		if(!remeshing_step(sim))
+			return false;
 		sim.frame++;
 	}
 	delete_constraints(cons);
+	return true;
 }
 
 vector<Constraint*> get_constraints (Simulation &sim, bool include_proximity) {
@@ -212,7 +223,7 @@ void strainlimiting_step (Simulation &sim, const vector<Constraint*> &cons) {
 	sim.timers[strainlimiting].tock();
 }
 
-void equilibration_step (Simulation &sim) {
+bool equilibration_step (Simulation &sim) {
 	sim.timers[remeshing].tick();
 	vector<Constraint*> cons;// = get_constraints(sim, true);
 	// double stiff = 1;
@@ -229,13 +240,15 @@ void equilibration_step (Simulation &sim) {
 	cons = get_constraints(sim, false);
 	if (sim.enabled[collision]) {
 	sim.timers[collision].tick();
-	collision_response(sim.cloth_meshes, cons, sim.obstacle_meshes);
+	if(!collision_response(sim.cloth_meshes, cons, sim.obstacle_meshes))
+		return false;
 	sim.timers[collision].tock();
 	}
 	delete_constraints(cons);
+	return true;
 }
 
-void strainzeroing_step (Simulation &sim) {
+bool strainzeroing_step (Simulation &sim) {
 	sim.timers[strainlimiting].tick();
 	vector<Vec2> strain_limits(size<Face>(sim.cloth_meshes), Vec2(1,1));
 	vector<Constraint*> cons =
@@ -246,27 +259,31 @@ void strainzeroing_step (Simulation &sim) {
 	sim.timers[strainlimiting].tock();
 	if (sim.enabled[collision]) {
 		sim.timers[collision].tock();
-		collision_response(sim.cloth_meshes, vector<Constraint*>(),
-						   sim.obstacle_meshes);
+		if(!collision_response(sim.cloth_meshes, vector<Constraint*>(),
+						   sim.obstacle_meshes))
+						   return false;
 		sim.timers[collision].tock();
 	}
+	return true;
 }
 
-void collision_step (Simulation &sim) {
+bool collision_step (Simulation &sim) {
 	if (!sim.enabled[collision])
-		return;
+		return false;
 	sim.timers[collision].tick();
 	vector<Vec3> xold = node_positions(sim.cloth_meshes);
 	vector<Constraint*> cons = get_constraints(sim, false);
-	collision_response(sim.cloth_meshes, cons, sim.obstacle_meshes);
+	if(!collision_response(sim.cloth_meshes, cons, sim.obstacle_meshes))
+		return false;
 	delete_constraints(cons);
 	update_velocities(sim.cloth_meshes, xold, sim.step_time);
 	sim.timers[collision].tock();
+	return true;
 }
 
-void remeshing_step (Simulation &sim, bool initializing) {
+bool remeshing_step (Simulation &sim, bool initializing) {
 	if (!sim.enabled[remeshing])
-		return;
+		return false;
 	// copy old meshes
 	vector<Mesh> old_meshes(sim.cloths.size());
 	vector<Mesh*> old_meshes_p(sim.cloths.size()); // for symmetry in separate()
@@ -306,7 +323,8 @@ void remeshing_step (Simulation &sim, bool initializing) {
 	// separate
 	if (sim.enabled[separation]) {
 		sim.timers[separation].tick();
-		separate(sim.cloth_meshes, old_meshes_p, sim.obstacle_meshes);
+		if(!separate(sim.cloth_meshes, old_meshes_p, sim.obstacle_meshes))
+			return false;
 		sim.timers[separation].tock();
 	}
 	// apply pop filter
@@ -321,6 +339,7 @@ void remeshing_step (Simulation &sim, bool initializing) {
 	// delete old meshes
 	for (int c = 0; c < sim.cloths.size(); c++)
 		delete_mesh(old_meshes[c]);
+	return true;
 }
 
 void update_velocities (vector<Mesh*> &meshes, vector<Vec3> &xold, double dt) {
