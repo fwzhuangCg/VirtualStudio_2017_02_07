@@ -16,7 +16,9 @@
 void DXFImpoter::addLayer( const DL_LayerData& data )
 {
 #ifdef _DEBUG
-	printf("LAYER: %s flags: %d\n", data.name.c_str(), data.flags);
+	char str[100];
+	sprintf(str, "LAYER: %s flags: %d\n", data.name.c_str(), data.flags);
+	OutputDebugString(str);
 	printAttributes();
 #endif
 }
@@ -24,7 +26,9 @@ void DXFImpoter::addLayer( const DL_LayerData& data )
 void DXFImpoter::addPoint( const DL_PointData& data )
 {
 #ifdef _DEBUG
-	printf("POINT    (%6.3f, %6.3f, %6.3f)\n", data.x, data.y, data.z);
+	char str[100];
+	sprintf(str, "POINT    (%6.3f, %6.3f, %6.3f)\n", data.x, data.y, data.z);
+	OutputDebugString(str);
 	printAttributes();
 #endif
 }
@@ -32,7 +36,9 @@ void DXFImpoter::addPoint( const DL_PointData& data )
 void DXFImpoter::addLine( const DL_LineData& data )
 {
 #ifdef _DEBUG
-	printf("LINE     (%6.3f, %6.3f, %6.3f) (%6.3f, %6.3f, %6.3f)\n", data.x1, data.y1, data.z1, data.x2, data.y2, data.z2);
+	char str[100];
+	sprintf(str, "LINE     (%6.3f, %6.3f, %6.3f) (%6.3f, %6.3f, %6.3f)\n", data.x1, data.y1, data.z1, data.x2, data.y2, data.z2);
+	OutputDebugString(str);
 	printAttributes();
 #endif
 	current_panel_ = attributes.getLayer();
@@ -61,9 +67,11 @@ void DXFImpoter::addLine( const DL_LineData& data )
 void DXFImpoter::addArc( const DL_ArcData& data )
 {
 #ifdef _DEBUG
-	printf("ARC      (%6.3f, %6.3f, %6.3f) %6.3f, %6.3f, %6.3f\n",
+	char str[100];
+	sprintf(str, "ARC      (%6.3f, %6.3f, %6.3f) %6.3f, %6.3f, %6.3f\n",
 		data.cx, data.cy, data.cz,
 		data.radius, data.angle1, data.angle2);
+	OutputDebugString(str);
 	printAttributes();
 #endif
 }
@@ -71,9 +79,11 @@ void DXFImpoter::addArc( const DL_ArcData& data )
 void DXFImpoter::addCircle( const DL_CircleData& data )
 {
 #ifdef _DEBUG
-	printf("CIRCLE   (%6.3f, %6.3f, %6.3f) %6.3f\n",
+	char str[100];
+	sprintf(str, "CIRCLE   (%6.3f, %6.3f, %6.3f) %6.3f\n",
 		data.cx, data.cy, data.cz,
 		data.radius);
+	OutputDebugString(str);
 	printAttributes();
 #endif
 }
@@ -81,8 +91,11 @@ void DXFImpoter::addCircle( const DL_CircleData& data )
 void DXFImpoter::addPolyline( const DL_PolylineData& data )
 {
 #ifdef _DEBUG
-	printf("POLYLINE \n");
-	printf("flags: %d\n", (int)data.flags);
+	char str[100];
+	sprintf(str, "POLYLINE \n");
+	OutputDebugString(str);
+	sprintf(str, "flags: %d\n", (int)data.flags);
+	OutputDebugString(str);
 	printAttributes();
 #endif
 	current_panel_ = attributes.getLayer();
@@ -99,7 +112,9 @@ void DXFImpoter::addPolyline( const DL_PolylineData& data )
 void DXFImpoter::addVertex( const DL_VertexData& data )
 {
 #ifdef _DEBUG
-	printf("VERTEX   (%6.3f, %6.3f, %6.3f) %6.3f\n", data.x, data.y, data.z, data.bulge);
+	char str[100];
+	sprintf(str, "VERTEX   (%6.3f, %6.3f, %6.3f) %6.3f\n", data.x, data.y, data.z, data.bulge);
+	OutputDebugString(str);
 	printAttributes();
 #endif
 	if (temp_contour_.isEmpty())
@@ -115,10 +130,13 @@ void DXFImpoter::addVertex( const DL_VertexData& data )
 void DXFImpoter::add3dFace( const DL_3dFaceData& data )
 {
 #ifdef _DEBUG
-	printf("3DFACE\n");
+	char str[100];
+	sprintf(str, "3DFACE\n");
+	OutputDebugString(str);
 	for (int i=0; i<4; i++) {
-		printf("   corner %d: %6.3f %6.3f %6.3f\n", 
+		sprintf(str, "   corner %d: %6.3f %6.3f %6.3f\n", 
 			i, data.x[i], data.y[i], data.z[i]);
+		OutputDebugString(str);
 	}
 	printAttributes();
 #endif
@@ -127,38 +145,50 @@ void DXFImpoter::add3dFace( const DL_3dFaceData& data )
 // 仅供输出日志 调试之用
 void DXFImpoter::printAttributes()
 {
-	printf("  Attributes: Layer: %s, ", attributes.getLayer().c_str());
-	printf(" Color: ");
+	char str[100];
+	sprintf(str, "  Attributes: Layer: %s, ", attributes.getLayer().c_str());
+	OutputDebugString(str);
+	sprintf(str, " Color: ");
+	OutputDebugString(str);
 	if (attributes.getColor()==256)	
 	{
-		printf("BYLAYER");
+		sprintf(str, "BYLAYER");
+		OutputDebugString(str);
 	} 
 	else if (attributes.getColor()==0) 
 	{
-		printf("BYBLOCK");
+		sprintf(str, "BYBLOCK");
+		OutputDebugString(str);
 	} 
 	else 
 	{
-		printf("%d", attributes.getColor());
+		sprintf(str, "%d", attributes.getColor());
+		OutputDebugString(str);
 	}
-	printf(" Width: ");
+	sprintf(str, " Width: ");
+	OutputDebugString(str);
 	if (attributes.getWidth()==-1) 
 	{
-		printf("BYLAYER");
+		sprintf(str, "BYLAYER");
+		OutputDebugString(str);
 	} 
 	else if (attributes.getWidth()==-2) 
 	{
-		printf("BYBLOCK");
+		sprintf(str, "BYBLOCK");
+		OutputDebugString(str);
 	} 
 	else if (attributes.getWidth()==-3) 
 	{
-		printf("DEFAULT");
+		sprintf(str, "DEFAULT");
+		OutputDebugString(str);
 	} 
 	else 
 	{
-		printf("%d", attributes.getWidth());
+		sprintf(str, "%d", attributes.getWidth());
+		OutputDebugString(str);
 	}
-	printf(" Type: %s\n", attributes.getLineType().c_str());
+	sprintf(str, " Type: %s\n", attributes.getLineType().c_str());
+	OutputDebugString(str);
 }
 
 void DXFImpoter::addLastContour()

@@ -115,7 +115,6 @@ public:
     QColor color() const { return color_; }
     QString toolTip() const { return tool_tip_; }
 
-	
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
