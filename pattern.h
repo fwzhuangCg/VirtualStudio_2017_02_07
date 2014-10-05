@@ -10,6 +10,7 @@
 #include "cad2d.h"
 // dxflib headers
 #include <dl_creationadapter.h>
+#include <memory>
 
 // forward declaration
 class QGraphicsSceneMouseEvent;
@@ -24,6 +25,10 @@ class QStyleOptionGraphicsItem;
 class DL_Dxf;
 class Line;
 class PatternScene;
+struct Panel;
+
+typedef std::tr1::shared_ptr<Panel> SmtPtrPanel;
+typedef std::tr1::shared_ptr<Line> SmtPtrLine;
 /************************************************************************/
 /* DXF文件导入器                                                         */
 /************************************************************************/
@@ -31,13 +36,7 @@ class DXFImpoter : public DL_CreationAdapter
 {
     friend class PatternScene;
 public:
-    DXFImpoter(PatternScene* patternScene) :
-        pattern_scene_(patternScene),
-        previous_panel_("1"),
-        current_panel_("1"),
-        new_panel_flag_(false),
-        scale_factor_(50.f)
-    {}
+    DXFImpoter(PatternScene* patternScene);
 
     virtual void addLayer(const DL_LayerData& data);
     virtual void addPoint(const DL_PointData& data);
@@ -52,15 +51,20 @@ public:
     void printAttributes();
     void addLastContour();
 
+	QList<SmtPtrPanel> panels() {return panels_;}
+
 private:
     PatternScene* pattern_scene_;
     std::string previous_panel_;
     std::string current_panel_;
     bool new_panel_flag_;
 
-    QPainterPath temp_contour_;
+	SmtPtrPanel temp_panel_;
+    //QPainterPath temp_contour_;
+	QPainterPath temp_curve_;
     QPointF temp_point_;
-    QList<QPainterPath> panel_contours_;
+   // QList<QPainterPath> panel_contours_;
+	QList<SmtPtrPanel> panels_;
     const float scale_factor_;
 };
 /************************************************************************/
@@ -96,6 +100,11 @@ class PatternScene;
 /************************************************************************/
 /* 衣片                                                                 */
 /************************************************************************/
+struct Panel
+{
+	QList<SmtPtrLine> lines_;
+};
+
 class Line : public QGraphicsPathItem
 {
     friend class PatternScene;
@@ -103,6 +112,7 @@ public:
     enum { Type = UserType + 3 };
     int type() const { return Type; }
 
+	Line(double x1, double y1, double x2, double y2);
     Line(const QPainterPath &path, QGraphicsScene *scene = 0);
 
     void addSeamLine(SeamLine *seamline);
@@ -123,7 +133,7 @@ protected:
 	void hoverLeaveEvent(QGraphicsSceneHoverEvent * event);
 
 private:
-	void setPath(const QPainterPath &path);
+	Line(const Line & line){}
 
     QColor  color_;
     QString tool_tip_;
@@ -157,7 +167,7 @@ public:
 
 	void setMode(Mode mode);
 
-	QList<Line*> getPanels(){return panels_;}
+	QList<SmtPtrPanel> getPanels(){return panels_;}
 
 signals:
 	void panelAdded(Line *item);
@@ -178,7 +188,7 @@ private:
 	QColor	seamline_color_;
 	bool	grid_visible_;
 
-	QList<Line*>	panels_;	    // 衣片
+	QList<SmtPtrPanel>	panels_;	    // 衣片
     DXFImpoter*     dxf_importer_;  // DXF导入器
     DL_Dxf*         dxf_file_;      // DXF文件
 };

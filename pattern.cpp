@@ -13,6 +13,15 @@
 /* DXF文件导入器                                                         */
 /************************************************************************/
 // 注意 由于时间关系 本实现只能处理简单的DXF格式
+DXFImpoter::DXFImpoter(PatternScene* patternScene) :
+        pattern_scene_(patternScene),
+        previous_panel_("1"),
+        current_panel_("1"),
+        new_panel_flag_(false),
+        scale_factor_(50.f),
+		temp_panel_(new Panel)
+    {}
+
 void DXFImpoter::addLayer( const DL_LayerData& data )
 {
 #ifdef _DEBUG
@@ -45,12 +54,19 @@ void DXFImpoter::addLine( const DL_LineData& data )
 	new_panel_flag_ = (current_panel_ != previous_panel_);
 	if (new_panel_flag_)
 	{
-		temp_contour_.closeSubpath();
-		panel_contours_.append(temp_contour_);
-		temp_contour_ = QPainterPath();
-		previous_panel_ = current_panel_;
+		//temp_contour_.closeSubpath();
+		//panel_contours_.append(temp_contour_);
+		//temp_contour_ = QPainterPath();
+		//previous_panel_ = current_panel_;
+
+		if (!temp_curve_.isEmpty()) {
+			temp_panel_->lines_.append(SmtPtrLine(new Line(temp_curve_)));
+			temp_curve_ = QPainterPath();
+		}
+		panels_.append(temp_panel_);
+		temp_panel_ = SmtPtrPanel(new Panel);
 	}
-	else
+	/*else
 	{
 		if (temp_contour_.isEmpty())
 		{
@@ -61,7 +77,8 @@ void DXFImpoter::addLine( const DL_LineData& data )
 		{
 			temp_contour_.lineTo(data.x2 * scale_factor_, data.y2 * scale_factor_);
 		}
-	}
+	}*/
+	temp_panel_->lines_.append(SmtPtrLine(new Line(data.x1 * scale_factor_, data.y1 * scale_factor_, data.x2 * scale_factor_, data.y2 * scale_factor_)));
 }
 
 void DXFImpoter::addArc( const DL_ArcData& data )
@@ -100,12 +117,19 @@ void DXFImpoter::addPolyline( const DL_PolylineData& data )
 #endif
 	current_panel_ = attributes.getLayer();
 	new_panel_flag_ = (current_panel_ != previous_panel_);
+	if (temp_curve_.elementCount()) {
+		temp_panel_->lines_.append(SmtPtrLine(new Line(temp_curve_)));
+		temp_curve_ = QPainterPath();
+	}
 	if (new_panel_flag_)
 	{
-		temp_contour_.closeSubpath();
-		panel_contours_.append(temp_contour_);
-		temp_contour_ = QPainterPath();
-		previous_panel_ = current_panel_;
+		//temp_contour_.closeSubpath();
+		//panel_contours_.append(temp_contour_);
+		//temp_contour_ = QPainterPath();
+		//previous_panel_ = current_panel_;
+
+		panels_.append(temp_panel_);
+		temp_panel_ = SmtPtrPanel(new Panel);
 	}
 }
 
@@ -117,13 +141,13 @@ void DXFImpoter::addVertex( const DL_VertexData& data )
 	OutputDebugString(str);
 	printAttributes();
 #endif
-	if (temp_contour_.isEmpty())
+	if (!temp_curve_.elementCount())
 	{
-		temp_contour_.moveTo(data.x * scale_factor_, data.y * scale_factor_);
+		temp_curve_.moveTo(data.x * scale_factor_, data.y * scale_factor_);
 	}
 	else
 	{
-		temp_contour_.lineTo(data.x * scale_factor_, data.y * scale_factor_);
+		temp_curve_.lineTo(data.x * scale_factor_, data.y * scale_factor_);
 	}
 }
 
@@ -193,16 +217,18 @@ void DXFImpoter::printAttributes()
 
 void DXFImpoter::addLastContour()
 {
-	temp_contour_.closeSubpath();
-	panel_contours_.append(temp_contour_);
+	//temp_contour_.closeSubpath();
+	//panel_contours_.append(temp_contour_);
+
+	panels_.append(temp_panel_);
 }
 
 void DXFImpoter::clear()
 {
-	previous_panel_ = current_panel_ = "1";
+	//previous_panel_ = current_panel_ = "1";
 	new_panel_flag_ = false;
-	temp_contour_ = QPainterPath();
-	panel_contours_.clear();
+	temp_curve_ = QPainterPath();
+	panels_.clear();
 }
 
 /************************************************************************/
@@ -247,6 +273,19 @@ Line::Line( const QPainterPath &path, QGraphicsScene *scene /*= 0*/ ) : scene_(s
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 	setAcceptHoverEvents(true);
+	QGraphicsPathItem::setPath(path);
+	line_ = path;
+}
+
+Line::Line(double x1, double y1, double x2, double y2)
+{
+	setFlag(QGraphicsItem::ItemIsMovable, true);
+	setFlag(QGraphicsItem::ItemIsSelectable, true);
+	setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+	setAcceptHoverEvents(true);
+	QPainterPath path;
+	path.moveTo(x1, y1);
+	path.lineTo(x2, y2);
 	QGraphicsPathItem::setPath(path);
 	line_ = path;
 }
@@ -410,11 +449,13 @@ bool PatternScene::importPattern( const QString& filename )
 		 return false;
 	 }
 	 dxf_importer_->addLastContour();
-	 for (int i = 0; i < dxf_importer_->panel_contours_.size(); ++i)
+	 panels_ = dxf_importer_->panels();
+	 for (int i = 0; i < panels_.size(); ++i)
 	 {
-		 Line* new_panel = new Line(dxf_importer_->panel_contours_[i], this);
-		 addItem(new_panel);
-		 panels_.push_back(new_panel);
+		 for(int j = 0; j < panels_[i]->lines_.size(); ++j)
+		 {
+			 addItem(panels_[i]->lines_[j].get());
+		 }
 	 }
 
 	 return true;
