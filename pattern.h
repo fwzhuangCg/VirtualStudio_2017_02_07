@@ -22,7 +22,7 @@ class QGraphicsSceneContextMenuEvent;
 class QStyleOptionGraphicsItem;
 
 class DL_Dxf;
-class Panel;
+class Line;
 class PatternScene;
 /************************************************************************/
 /* DXF文件导入器                                                         */
@@ -68,17 +68,17 @@ private:
 /************************************************************************/
 class SeamLine : public QGraphicsLineItem
 {
-    friend class Panel;
+    friend class Line;
 public:
     enum { Type = UserType + 2 };
     int type() const { return Type; }
 
-    SeamLine(Panel *startItem, Panel *endItem, QMenu *contextMenu = nullptr);
+    SeamLine(Line *startItem, Line *endItem, QMenu *contextMenu = nullptr);
 
     QColor color() const { return color_; }
     void setColor(const QColor &color);
-    Panel * startItem() const { return start_item_; }	
-    Panel * endItem() const { return end_item_; }
+    Line * startItem() const { return start_item_; }	
+    Line * endItem() const { return end_item_; }
 
     void updatePosition();
 
@@ -86,8 +86,8 @@ protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
 
 private:
-    Panel*  start_item_;
-    Panel*  end_item_;
+    Line*  start_item_;
+    Line*  end_item_;
     QMenu*  context_menu_;
     QColor  color_;
 };
@@ -96,21 +96,21 @@ class PatternScene;
 /************************************************************************/
 /* 衣片                                                                 */
 /************************************************************************/
-class Panel : public QGraphicsPathItem
+class Line : public QGraphicsPathItem
 {
     friend class PatternScene;
 public:
     enum { Type = UserType + 3 };
     int type() const { return Type; }
 
-    Panel(const QPainterPath &path, QGraphicsScene *scene = 0);
+    Line(const QPainterPath &path, QGraphicsScene *scene = 0);
 
     void addSeamLine(SeamLine *seamline);
     void removeSeamLine(SeamLine *seamline);
     void removeSeamLines();
 
     void setToolTip(const QString &toolTip) { tool_tip_ = toolTip; }
-    void setColor(const QColor &color) { color_ = color; }
+	void setColor(const QColor &color) { color_ = color;setPen(color); }
 
     QColor color() const { return color_; }
     QString toolTip() const { return tool_tip_; }
@@ -119,6 +119,8 @@ public:
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
+	void hoverEnterEvent(QGraphicsSceneHoverEvent * event);
+	void hoverLeaveEvent(QGraphicsSceneHoverEvent * event);
 
 private:
 	void setPath(const QPainterPath &path);
@@ -126,8 +128,8 @@ private:
     QColor  color_;
     QString tool_tip_;
     QMenu*  context_menu_;
-	QPainterPath contour_;
-
+	QPainterPath line_;
+	QGraphicsScene * scene_;
     QList<SeamLine*>        seam_lines_;
 };
 
@@ -155,10 +157,10 @@ public:
 
 	void setMode(Mode mode);
 
-	QList<Panel*> getPanels(){return panels_;}
+	QList<Line*> getPanels(){return panels_;}
 
 signals:
-	void panelAdded(Panel *item);
+	void panelAdded(Line *item);
 
 protected:
 	void mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent);
@@ -176,7 +178,7 @@ private:
 	QColor	seamline_color_;
 	bool	grid_visible_;
 
-	QList<Panel*>	panels_;	    // 衣片
+	QList<Line*>	panels_;	    // 衣片
     DXFImpoter*     dxf_importer_;  // DXF导入器
     DL_Dxf*         dxf_file_;      // DXF文件
 };

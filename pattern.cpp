@@ -208,7 +208,7 @@ void DXFImpoter::clear()
 /************************************************************************/
 /* ·ìºÏÏß                                                               */
 /************************************************************************/
-SeamLine::SeamLine( Panel *startItem, Panel *endItem, QMenu *contextMenu) : 
+SeamLine::SeamLine( Line *startItem, Line *endItem, QMenu *contextMenu) : 
 	QGraphicsLineItem(),
 	start_item_(startItem), 
 	end_item_(endItem), 
@@ -241,16 +241,17 @@ void SeamLine::setColor( const QColor &color )
 /************************************************************************/
 /* ÒÂÆ¬                                                                 */
 /************************************************************************/
-Panel::Panel( const QPainterPath &path, QGraphicsScene *scene /*= 0*/ )
+Line::Line( const QPainterPath &path, QGraphicsScene *scene /*= 0*/ ) : scene_(scene)
 {
 	setFlag(QGraphicsItem::ItemIsMovable, true);
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+	setAcceptHoverEvents(true);
 	QGraphicsPathItem::setPath(path);
-	contour_ = path;
+	line_ = path;
 }
 
-void Panel::removeSeamLine( SeamLine *seamline )
+void Line::removeSeamLine( SeamLine *seamline )
 {
 	int index = seam_lines_.indexOf(seamline);
 
@@ -258,7 +259,7 @@ void Panel::removeSeamLine( SeamLine *seamline )
 		seam_lines_.removeAt(index);
 }
 
-void Panel::removeSeamLines()
+void Line::removeSeamLines()
 {
 	foreach (SeamLine *seamline, seam_lines_)
 	{
@@ -269,19 +270,19 @@ void Panel::removeSeamLines()
 	}
 }
 
-void Panel::addSeamLine( SeamLine *seamline )
+void Line::addSeamLine( SeamLine *seamline )
 {
 	seam_lines_.append(seamline);
 }
 
-void Panel::contextMenuEvent( QGraphicsSceneContextMenuEvent *event )
+void Line::contextMenuEvent( QGraphicsSceneContextMenuEvent *event )
 {
 	scene()->clearSelection();
 	setSelected(true);
 	context_menu_->exec(event->screenPos());
 }
 
-QVariant Panel::itemChange( GraphicsItemChange change, const QVariant &value )
+QVariant Line::itemChange( GraphicsItemChange change, const QVariant &value )
 {
 	if (change == QGraphicsItem::ItemPositionChange)
 	{
@@ -292,6 +293,16 @@ QVariant Panel::itemChange( GraphicsItemChange change, const QVariant &value )
 	}
 
 	return value;
+}
+
+void Line::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
+{
+	setColor(QColor(255, 0, 0));
+}
+
+void Line::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
+{
+	setColor(QColor(0, 0, 0));
 }
 
 /************************************************************************/
@@ -319,9 +330,9 @@ PatternScene::~PatternScene()
 void PatternScene::setPanelColor( const QColor &color )
 {
 	panel_color_ = color;;
-	if (isItemChange(Panel::Type))
+	if (isItemChange(Line::Type))
 	{
-		Panel *item = qgraphicsitem_cast<Panel *>(selectedItems().first());
+		Line *item = qgraphicsitem_cast<Line *>(selectedItems().first());
 		item->setBrush(panel_color_);
 	}
 }
@@ -401,7 +412,7 @@ bool PatternScene::importPattern( const QString& filename )
 	 dxf_importer_->addLastContour();
 	 for (int i = 0; i < dxf_importer_->panel_contours_.size(); ++i)
 	 {
-		 Panel* new_panel = new Panel(dxf_importer_->panel_contours_[i], this);
+		 Line* new_panel = new Line(dxf_importer_->panel_contours_[i], this);
 		 addItem(new_panel);
 		 panels_.push_back(new_panel);
 	 }

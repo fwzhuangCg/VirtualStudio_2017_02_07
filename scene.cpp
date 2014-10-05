@@ -713,7 +713,7 @@ void Scene::importCloth(QString file_name)
 	prepare_scene_cloth(simcloth);
 }
 
-void Scene::generateCloth(Panel &panel)
+void Scene::generateCloth(Line &panel)
 {
 	SmtClothPtr simcloth = ClothHandler::load_cloth_from_contour(panel.path());
 	prepare_scene_cloth(simcloth);

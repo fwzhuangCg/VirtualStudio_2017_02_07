@@ -376,6 +376,7 @@ QVariant AnimationClip::itemChange( GraphicsItemChange change, const QVariant &v
 	return QGraphicsObject::itemChange(change, value);
 }
 
+
 Avatar* AnimationClip::avatar() const
 {
 	return animation_->avatar;
