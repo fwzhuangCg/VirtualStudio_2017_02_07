@@ -178,6 +178,8 @@ public:
 	void setMode(Mode mode);
 
 	QList<SmtPtrPanel> getPanels(){return panels_;}
+	
+	void addSeamLine(bool flag); 
 
 signals:
 	void panelAdded(Line *item);

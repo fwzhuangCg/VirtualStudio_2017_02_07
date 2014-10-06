@@ -109,8 +109,10 @@ void MainWindow::createActions()
 	design_showgrid_action_->setToolTip(tr("Show/Hide the background grid"));
 
 	design_add_seamline_action_ = new QAction(QIcon(":images/add_seamline.png"), tr("Add seamline"), this);
-	design_showgrid_action_->setStatusTip(tr("Add seamline"));
-	design_showgrid_action_->setToolTip(tr("Add seamline"));
+	design_add_seamline_action_->setCheckable(true);
+	design_add_seamline_action_->setChecked(false);
+	design_add_seamline_action_->setStatusTip(tr("Add seamline"));
+	design_add_seamline_action_->setToolTip(tr("Add seamline"));
 
 	design_generate_cloth_action_ = new QAction(QIcon(":images/generate_cloth.png"), tr("Generate cloth"), this);
 	design_showgrid_action_->setStatusTip(tr("Generate cloth"));
@@ -218,6 +220,7 @@ void MainWindow::createConnections()
 	connect(file_import_pattern_action_, SIGNAL(triggered()), this, SLOT(fileImportPattern()));
 	connect(file_import_cloth_action_, SIGNAL(triggered()), this, SLOT(fileImportCloth()));
 	connect(design_showgrid_action_, SIGNAL(triggered()), this, SLOT(toggleGridVisible()));
+	connect(design_add_seamline_action_, SIGNAL(triggered()), this, SLOT(addSeamline()));
 	connect(file_export_as_video_action_, SIGNAL(triggered()), this, SLOT(exportAsVideo()));
 
 	// interaction mode
@@ -357,7 +360,7 @@ void MainWindow::exportAsVideo()
 
 void MainWindow::addSeamline()
 {
-
+	pattern_scene_->addSeamLine(design_add_seamline_action_->isChecked());
 }
 
 void MainWindow::generateCloth()

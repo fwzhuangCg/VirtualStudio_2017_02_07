@@ -289,20 +289,20 @@ void Panel::mouseMoveEvent( QGraphicsSceneMouseEvent * event )
 
 Line::Line( const QPainterPath &path, QGraphicsScene *scene /*= 0*/ ) : scene_(scene)
 {
-	setFlag(QGraphicsItem::ItemIsMovable, true);
-	setFlag(QGraphicsItem::ItemIsSelectable, true);
+	//setFlag(QGraphicsItem::ItemIsMovable, true);
+	//setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
-	setAcceptHoverEvents(true);
+	//setAcceptHoverEvents(true);
 	QGraphicsPathItem::setPath(path);
 	line_ = path;
 }
 
 Line::Line(double x1, double y1, double x2, double y2)
 {
-	setFlag(QGraphicsItem::ItemIsMovable, true);
-	setFlag(QGraphicsItem::ItemIsSelectable, true);
+	//setFlag(QGraphicsItem::ItemIsMovable, true);
+	//setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
-	setAcceptHoverEvents(true);
+	//setAcceptHoverEvents(true);
 	QPainterPath path;
 	path.moveTo(x1, y1);
 	path.lineTo(x2, y2);
@@ -475,7 +475,7 @@ bool PatternScene::importPattern( const QString& filename )
 		 addItem(panels_[i].get());
 		 for(int j = 0; j < panels_[i]->lines_.size(); ++j)
 		 {
-			 panels_[i]->lines_[j]->setParentItem(panels_[i].get());
+			 panels_[i]->lines_[j]->setParentItem(panels_[i].get()); // move together
 			 addItem(panels_[i]->lines_[j].get());
 		 }
 	 }
@@ -483,6 +483,16 @@ bool PatternScene::importPattern( const QString& filename )
 	 return true;
 }
 
+void PatternScene::addSeamLine(bool flag)
+{
+	for(QList<SmtPtrPanel>::iterator iter = panels_.begin(); iter != panels_.end(); ++iter) {
+		QList<SmtPtrLine> &lines = (*iter)->lines_;
+		for(QList<SmtPtrLine>::iterator liter = lines.begin(); liter != lines.end(); ++liter) {
+			(*liter)->setAcceptHoverEvents(flag);
+			(*liter)->setFlag(QGraphicsItem::ItemIsSelectable, flag);
+		}
+	}
+}
 
 /************************************************************************/
 /* 服装打板视图                                                          */
