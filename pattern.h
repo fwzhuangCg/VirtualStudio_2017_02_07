@@ -102,7 +102,7 @@ class PatternScene;
 /************************************************************************/
 struct Panel
 {
-    QPainterPath contour_;
+    QGraphicsPathItem contour_;
 	QList<SmtPtrLine> lines_;
 };
 
