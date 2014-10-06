@@ -25,7 +25,7 @@ class QStyleOptionGraphicsItem;
 class DL_Dxf;
 class Line;
 class PatternScene;
-struct Panel;
+class Panel;
 
 typedef std::tr1::shared_ptr<Panel> SmtPtrPanel;
 typedef std::tr1::shared_ptr<Line> SmtPtrLine;
@@ -100,9 +100,15 @@ class PatternScene;
 /************************************************************************/
 /* ÒÂÆ¬                                                                 */
 /************************************************************************/
-struct Panel
+class Panel : public QGraphicsPathItem
 {
-    QGraphicsPathItem contour_;
+public:
+	Panel()
+	{
+		setFlag(QGraphicsItem::ItemIsMovable, true);
+		setFlag(QGraphicsItem::ItemIsSelectable, true);
+		setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+	}
 	QList<SmtPtrLine> lines_;
 };
 

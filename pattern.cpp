@@ -56,7 +56,7 @@ void DXFImpoter::addLine( const DL_LineData& data )
 	{
 		temp_contour_.closeSubpath();
 		//panel_contours_.append(temp_contour_);
-		temp_panel_->contour_.setPath(temp_contour_);
+		temp_panel_->setPath(temp_contour_);
 		temp_contour_ = QPainterPath();
 		previous_panel_ = current_panel_;
 
@@ -126,7 +126,7 @@ void DXFImpoter::addPolyline( const DL_PolylineData& data )
 	{
 		temp_contour_.closeSubpath();
 		//panel_contours_.append(temp_contour_);
-		temp_panel_->contour_.setPath(temp_contour_);
+		temp_panel_->setPath(temp_contour_);
 		temp_contour_ = QPainterPath();
 		previous_panel_ = current_panel_;
 
@@ -230,7 +230,7 @@ void DXFImpoter::addLastContour()
 {
 	temp_contour_.closeSubpath();
 	//panel_contours_.append(temp_contour_);
-	temp_panel_->contour_.setPath(temp_contour_);
+	temp_panel_->setPath(temp_contour_);
 
 	panels_.append(temp_panel_);
 }
@@ -464,6 +464,7 @@ bool PatternScene::importPattern( const QString& filename )
 	 panels_ = dxf_importer_->panels();
 	 for (int i = 0; i < panels_.size(); ++i)
 	 {
+		 addItem(panels_[i].get());
 		 for(int j = 0; j < panels_[i]->lines_.size(); ++j)
 		 {
 			 addItem(panels_[i]->lines_[j].get());

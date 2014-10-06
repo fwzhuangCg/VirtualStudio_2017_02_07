@@ -364,7 +364,7 @@ void MainWindow::generateCloth()
 {
 	QList<SmtPtrPanel> & panels = pattern_scene_->getPanels();
 	for(QList<SmtPtrPanel>::iterator iter = panels.begin(); iter != panels.end(); ++iter) {
-		scene_->generateCloth((*iter)->contour_.path());
+		scene_->generateCloth((*iter)->path());
 	}
 	simulation_view_->paintGL();
 }
