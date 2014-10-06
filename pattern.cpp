@@ -279,15 +279,8 @@ void SeamLine::setColor( const QColor &color )
 /************************************************************************/
 /* ÒÂÆ¬                                                                 */
 /************************************************************************/
-void Panel::mouseMoveEvent( QGraphicsSceneMouseEvent * event )
-{
-	/*for(int i = 0; i < lines_.size(); ++i) {
-		event->
-	}*/
-	QGraphicsPathItem::mouseMoveEvent(event);
-}
 
-Line::Line( const QPainterPath &path, QGraphicsScene *scene /*= 0*/ ) : scene_(scene)
+Line::Line( const QPainterPath &path, QGraphicsScene *scene /*= 0*/ ) : scene_(scene), color_(QColor(0, 0, 0))
 {
 	//setFlag(QGraphicsItem::ItemIsMovable, true);
 	//setFlag(QGraphicsItem::ItemIsSelectable, true);
@@ -297,7 +290,7 @@ Line::Line( const QPainterPath &path, QGraphicsScene *scene /*= 0*/ ) : scene_(s
 	line_ = path;
 }
 
-Line::Line(double x1, double y1, double x2, double y2)
+Line::Line(double x1, double y1, double x2, double y2) : color_(QColor(0, 0, 0))
 {
 	//setFlag(QGraphicsItem::ItemIsMovable, true);
 	//setFlag(QGraphicsItem::ItemIsSelectable, true);
@@ -356,12 +349,41 @@ QVariant Line::itemChange( GraphicsItemChange change, const QVariant &value )
 
 void Line::hoverEnterEvent(QGraphicsSceneHoverEvent * event)
 {
-	setColor(QColor(255, 0, 0));
+	setPen(QColor(255, 0, 0));
+	QGraphicsPathItem::hoverEnterEvent(event);
 }
 
 void Line::hoverLeaveEvent(QGraphicsSceneHoverEvent * event)
 {
-	setColor(QColor(0, 0, 0));
+	setPen(color_);
+	QGraphicsPathItem::hoverLeaveEvent(event);
+}
+
+void Line::mousePressEvent ( QGraphicsSceneMouseEvent * event )
+{
+	setColor(colors[color_n]);
+	seamLine--;
+	if(!seamLine) {
+		color_n = (color_n + 1) % colors.size();
+		seamLine = 2;
+	}
+	QGraphicsPathItem::mousePressEvent(event);
+}
+
+int Line::color_n = 0;
+int Line::seamLine = 2;
+QVector<QColor> Line::colors;
+
+void Line::initColors()
+{
+	colors.push_back(QColor(27, 74, 239));
+	colors.push_back(QColor(183, 41, 224));
+	colors.push_back(QColor(71, 233, 24));
+	colors.push_back(QColor(204, 109, 53));
+	colors.push_back(QColor(54, 183, 237));
+	colors.push_back(QColor(111, 187, 104));
+	colors.push_back(QColor(203, 88, 163));
+	colors.push_back(QColor(180, 109, 3));
 }
 
 /************************************************************************/
@@ -378,6 +400,7 @@ PatternScene::PatternScene(/* QMenu *panelMenu, QMenu *seamlineMenu, */QObject *
 	dxf_importer_(new DXFImpoter(this)),
 	dxf_file_(nullptr)
 {
+	Line::initColors();
 }
 
 PatternScene::~PatternScene()

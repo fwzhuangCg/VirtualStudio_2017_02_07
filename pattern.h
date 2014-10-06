@@ -110,9 +110,6 @@ public:
 		setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 	}
 	QList<SmtPtrLine> lines_;
-
-protected:
-	void mouseMoveEvent( QGraphicsSceneMouseEvent * event );
 };
 
 class Line : public QGraphicsPathItem
@@ -130,17 +127,22 @@ public:
     void removeSeamLines();
 
     void setToolTip(const QString &toolTip) { tool_tip_ = toolTip; }
-	void setColor(const QColor &color) { color_ = color;setPen(color); }
+	void setColor(const QColor &color) { color_ = color; setPen(color_); }
 
     QColor color() const { return color_; }
     QString toolTip() const { return tool_tip_; }
 
+	static QVector<QColor> colors;
+	static void initColors();
+	static int color_n;
+	static int seamLine;
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event);
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 	void hoverEnterEvent(QGraphicsSceneHoverEvent * event);
 	void hoverLeaveEvent(QGraphicsSceneHoverEvent * event);
+	void mousePressEvent ( QGraphicsSceneMouseEvent * event );
 
 private:
 	Line(const Line & line){}
