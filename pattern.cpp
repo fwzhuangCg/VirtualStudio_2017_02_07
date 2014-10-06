@@ -279,6 +279,14 @@ void SeamLine::setColor( const QColor &color )
 /************************************************************************/
 /* ÒÂÆ¬                                                                 */
 /************************************************************************/
+void Panel::mouseMoveEvent( QGraphicsSceneMouseEvent * event )
+{
+	/*for(int i = 0; i < lines_.size(); ++i) {
+		event->
+	}*/
+	QGraphicsPathItem::mouseMoveEvent(event);
+}
+
 Line::Line( const QPainterPath &path, QGraphicsScene *scene /*= 0*/ ) : scene_(scene)
 {
 	setFlag(QGraphicsItem::ItemIsMovable, true);
@@ -467,6 +475,7 @@ bool PatternScene::importPattern( const QString& filename )
 		 addItem(panels_[i].get());
 		 for(int j = 0; j < panels_[i]->lines_.size(); ++j)
 		 {
+			 panels_[i]->lines_[j]->setParentItem(panels_[i].get());
 			 addItem(panels_[i]->lines_[j].get());
 		 }
 	 }

@@ -110,6 +110,9 @@ public:
 		setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 	}
 	QList<SmtPtrLine> lines_;
+
+protected:
+	void mouseMoveEvent( QGraphicsSceneMouseEvent * event );
 };
 
 class Line : public QGraphicsPathItem
