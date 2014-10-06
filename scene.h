@@ -105,7 +105,7 @@ public:
 
 	// wnf添加，导入OBJ服装
 	void importCloth(QString file_name);
-	void generateCloth(Line &panel);
+	void generateCloth(const QPainterPath &path);
 	void rotateCloth(const QPoint& prevPos, const QPoint& curPos);
 	void moveCloth(float dx, float dy);
 	void zoomCloth(float factor);

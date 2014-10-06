@@ -54,10 +54,11 @@ void DXFImpoter::addLine( const DL_LineData& data )
 	new_panel_flag_ = (current_panel_ != previous_panel_);
 	if (new_panel_flag_)
 	{
-		//temp_contour_.closeSubpath();
+		temp_contour_.closeSubpath();
 		//panel_contours_.append(temp_contour_);
-		//temp_contour_ = QPainterPath();
-		//previous_panel_ = current_panel_;
+		temp_panel_->contour_ = temp_contour_;
+		temp_contour_ = QPainterPath();
+		previous_panel_ = current_panel_;
 
 		if (!temp_curve_.isEmpty()) {
 			temp_panel_->lines_.append(SmtPtrLine(new Line(temp_curve_)));
@@ -66,7 +67,7 @@ void DXFImpoter::addLine( const DL_LineData& data )
 		panels_.append(temp_panel_);
 		temp_panel_ = SmtPtrPanel(new Panel);
 	}
-	/*else
+	else
 	{
 		if (temp_contour_.isEmpty())
 		{
@@ -77,7 +78,7 @@ void DXFImpoter::addLine( const DL_LineData& data )
 		{
 			temp_contour_.lineTo(data.x2 * scale_factor_, data.y2 * scale_factor_);
 		}
-	}*/
+	}
 	temp_panel_->lines_.append(SmtPtrLine(new Line(data.x1 * scale_factor_, data.y1 * scale_factor_, data.x2 * scale_factor_, data.y2 * scale_factor_)));
 }
 
@@ -123,10 +124,11 @@ void DXFImpoter::addPolyline( const DL_PolylineData& data )
 	}
 	if (new_panel_flag_)
 	{
-		//temp_contour_.closeSubpath();
+		temp_contour_.closeSubpath();
 		//panel_contours_.append(temp_contour_);
-		//temp_contour_ = QPainterPath();
-		//previous_panel_ = current_panel_;
+		temp_panel_->contour_ = temp_contour_;
+		temp_contour_ = QPainterPath();
+		previous_panel_ = current_panel_;
 
 		panels_.append(temp_panel_);
 		temp_panel_ = SmtPtrPanel(new Panel);
@@ -148,6 +150,15 @@ void DXFImpoter::addVertex( const DL_VertexData& data )
 	else
 	{
 		temp_curve_.lineTo(data.x * scale_factor_, data.y * scale_factor_);
+	}
+
+	if (!temp_contour_.elementCount())
+	{
+		temp_contour_.moveTo(data.x * scale_factor_, data.y * scale_factor_);
+	}
+	else
+	{
+		temp_contour_.lineTo(data.x * scale_factor_, data.y * scale_factor_);
 	}
 }
 
@@ -217,15 +228,16 @@ void DXFImpoter::printAttributes()
 
 void DXFImpoter::addLastContour()
 {
-	//temp_contour_.closeSubpath();
+	temp_contour_.closeSubpath();
 	//panel_contours_.append(temp_contour_);
+	temp_panel_->contour_ = temp_contour_;
 
 	panels_.append(temp_panel_);
 }
 
 void DXFImpoter::clear()
 {
-	//previous_panel_ = current_panel_ = "1";
+	previous_panel_ = current_panel_ = "1";
 	new_panel_flag_ = false;
 	temp_curve_ = QPainterPath();
 	panels_.clear();

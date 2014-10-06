@@ -60,10 +60,10 @@ private:
     bool new_panel_flag_;
 
 	SmtPtrPanel temp_panel_;
-    //QPainterPath temp_contour_;
+    QPainterPath temp_contour_;
 	QPainterPath temp_curve_;
     QPointF temp_point_;
-   // QList<QPainterPath> panel_contours_;
+    QList<QPainterPath> panel_contours_;
 	QList<SmtPtrPanel> panels_;
     const float scale_factor_;
 };
@@ -102,6 +102,7 @@ class PatternScene;
 /************************************************************************/
 struct Panel
 {
+    QPainterPath contour_;
 	QList<SmtPtrLine> lines_;
 };
 

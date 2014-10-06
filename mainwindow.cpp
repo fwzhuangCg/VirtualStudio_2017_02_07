@@ -363,9 +363,9 @@ void MainWindow::addSeamline()
 void MainWindow::generateCloth()
 {
 	QList<SmtPtrPanel> & panels = pattern_scene_->getPanels();
-	/*for(QList<Line*>::iterator iter = panels.begin(); iter != panels.end(); ++iter) {
-		scene_->generateCloth(**iter);
-	}*/
+	for(QList<SmtPtrPanel>::iterator iter = panels.begin(); iter != panels.end(); ++iter) {
+		scene_->generateCloth((*iter)->contour_);
+	}
 	simulation_view_->paintGL();
 }
 

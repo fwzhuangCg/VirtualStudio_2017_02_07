@@ -713,9 +713,9 @@ void Scene::importCloth(QString file_name)
 	prepare_scene_cloth(simcloth);
 }
 
-void Scene::generateCloth(Line &panel)
+void Scene::generateCloth(const QPainterPath &path)
 {
-	SmtClothPtr simcloth = ClothHandler::load_cloth_from_contour(panel.path());
+	SmtClothPtr simcloth = ClothHandler::load_cloth_from_contour(path);
 	prepare_scene_cloth(simcloth);
 }
 
