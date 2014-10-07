@@ -136,6 +136,7 @@ void Scene::render()
 
 	// Set the fragment shader display mode subroutine
 	glfunctions_->glUniformSubroutinesuiv(GL_FRAGMENT_SHADER, 1, &display_mode_subroutines_[display_mode_]);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Pass in the usual transformation matrices
 	shading_display_shader->setUniformValue("ModelViewMatrix", mv);

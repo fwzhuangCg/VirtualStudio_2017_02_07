@@ -32,6 +32,7 @@
 #include "optimization.hpp"
 #include "simulation.h"
 #include "util.h"
+#include <windows.h>
 #include <omp.h>
 #include <QMessageBox>
 using namespace std;
@@ -76,6 +77,11 @@ bool separate (vector<Mesh*> &meshes, const vector<Mesh*> &old_meshes,
 		if (!ixns.empty())
 			update_active(accs, ixns);
 		vector<Ixn> new_ixns = find_intersections(accs, obs_accs);
+#ifdef _DEBUG
+		char str[100];
+		sprintf(str, "%d\n", new_ixns.size());
+		OutputDebugString(str);
+#endif
 		if (new_ixns.empty()/* || new_ixns.size() < 30*/) // modified wunf 2013.12.30/
 			break;
 		append(ixns, new_ixns);
@@ -87,7 +93,7 @@ bool separate (vector<Mesh*> &meshes, const vector<Mesh*> &old_meshes,
 	}
 	if (iter == max_iter) {
 		QMessageBox::critical(0, "error", "Post-remeshing separation failed to converge!");
-		return false;
+		//return false;
 		//debug_save_meshes(meshes, "meshes");
 		//debug_save_meshes(old_meshes, "oldmeshes");
 		//debug_save_meshes(obs_meshes, "obsmeshes");

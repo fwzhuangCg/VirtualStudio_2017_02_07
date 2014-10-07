@@ -180,6 +180,7 @@ void DXFImpoter::add3dFace( const DL_3dFaceData& data )
 // 仅供输出日志 调试之用
 void DXFImpoter::printAttributes()
 {
+#ifdef _DEBUG
 	char str[100];
 	sprintf(str, "  Attributes: Layer: %s, ", attributes.getLayer().c_str());
 	OutputDebugString(str);
@@ -224,6 +225,7 @@ void DXFImpoter::printAttributes()
 	}
 	sprintf(str, " Type: %s\n", attributes.getLineType().c_str());
 	OutputDebugString(str);
+#endif
 }
 
 void DXFImpoter::addLastContour()
