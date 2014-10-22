@@ -93,7 +93,7 @@ bool separate (vector<Mesh*> &meshes, const vector<Mesh*> &old_meshes,
 	}
 	if (iter == max_iter) {
 		QMessageBox::critical(0, "error", "Post-remeshing separation failed to converge!");
-		//return false;
+		return false;
 		//debug_save_meshes(meshes, "meshes");
 		//debug_save_meshes(old_meshes, "oldmeshes");
 		//debug_save_meshes(obs_meshes, "obsmeshes");

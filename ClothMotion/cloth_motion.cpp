@@ -297,7 +297,7 @@ void ClothHandler::init_simulation()
 	sim_->enabled[Simulation::Proximity] = true;
 	sim_->enabled[Simulation::Physics] = true;
 	sim_->enabled[Simulation::Collision] = true;
-	sim_->enabled[Simulation::Remeshing] = true;
+	sim_->enabled[Simulation::Remeshing] = false;
 	sim_->enabled[Simulation::Separation] = true;
 	sim_->enabled[Simulation::PopFilter] = true;
 	if (!has_strain_limits)

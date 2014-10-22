@@ -269,7 +269,7 @@ bool strainzeroing_step (Simulation &sim) {
 
 bool collision_step (Simulation &sim) {
 	if (!sim.enabled[collision])
-		return false;
+		return true;
 	sim.timers[collision].tick();
 	vector<Vec3> xold = node_positions(sim.cloth_meshes);
 	vector<Constraint*> cons = get_constraints(sim, false);
@@ -283,7 +283,7 @@ bool collision_step (Simulation &sim) {
 
 bool remeshing_step (Simulation &sim, bool initializing) {
 	if (!sim.enabled[remeshing])
-		return false;
+		return true;
 	// copy old meshes
 	vector<Mesh> old_meshes(sim.cloths.size());
 	vector<Mesh*> old_meshes_p(sim.cloths.size()); // for symmetry in separate()
