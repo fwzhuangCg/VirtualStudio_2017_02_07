@@ -142,8 +142,8 @@ struct Mesh {
     std::vector<Edge*> edges;
     std::vector<Face*> faces;
     // These do *not* assume ownership, so no deletion on removal
-    void add (Vert *vert);
-    void add (Node *node);
+    void add (Vert *vert, int flag = 0);
+    void add (Node *node, int flag = 0);
     void add (Edge *edge);
     void add (Face *face);
     void remove (Vert *vert);

@@ -141,8 +141,11 @@ void compute_ms_data (Face* face) {
 void compute_ms_data (Edge* edge) {
     edge->l = 0;
     for (int s = 0; s < 2; s++)
-        if (edge->adjf[s])
-            edge->l += norm(edge_vert(edge,s,0)->u - edge_vert(edge,s,1)->u);
+        if (edge->adjf[s]) {
+			Vert *v1 = edge_vert(edge,s,0), *v2 = edge_vert(edge,s,1);
+			if(v1 && v2)
+				edge->l += norm(v1->u - v2->u);
+		}
     if (edge->adjf[0] && edge->adjf[1])
         edge->l /= 2;
 }
@@ -242,9 +245,10 @@ Vert *edge_vert (const Edge *edge, int side, int i) {
     Face *face = (Face*)edge->adjf[side];
     if (!face)
         return NULL;
-    for (int j = 0; j < 3; j++)
+    for (int j = 0; j < 3; j++) {
         if (face->v[j]->node == edge->n[i])
             return face->v[j];
+	}
     return NULL;
 }
 
@@ -263,11 +267,13 @@ void connectvn (Vert *vert, Node *node) {
     include(vert, node->verts);
 }
 
-void Mesh::add (Vert *vert) {
+void Mesh::add (Vert *vert, int flag/* = 0*/) {
     verts.push_back(vert);
-    vert->node = NULL;
-    vert->adjf.clear();
-    vert->index = verts.size()-1;
+	if(!flag) {
+		vert->node = NULL;
+		vert->adjf.clear();
+		vert->index = verts.size()-1;
+	}
 }
 
 void Mesh::remove (Vert* vert) {
@@ -279,13 +285,15 @@ void Mesh::remove (Vert* vert) {
     exclude(vert, verts);
 }
 
-void Mesh::add (Node *node) {
+void Mesh::add (Node *node, int flag/* = 0*/) {
     nodes.push_back(node);
-    node->preserve = false;
-    node->index = nodes.size()-1;
-    node->adje.clear();
-    for (int v = 0; v < node->verts.size(); v++)
-        node->verts[v]->node = node;
+	if(!flag) {
+		node->preserve = false;
+		node->index = nodes.size()-1;
+		node->adje.clear();
+		for (int v = 0; v < node->verts.size(); v++)
+			node->verts[v]->node = node;
+	}
 }
 
 void Mesh::remove (Node* node) {

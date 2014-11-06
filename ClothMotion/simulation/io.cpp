@@ -32,7 +32,7 @@
 #include <sstream>
 #include <QTextStream>
 #include <QFile>
-
+#include <set>
 
 using namespace std;
 
@@ -116,6 +116,35 @@ void generate_obj(Mesh &mesh, const Vector2dVector &zdmesh)
 	compute_ms_data(mesh);
 }
 
+struct WapNode {
+	WapNode(Node * value) : node(value) {}
+	Node * node;
+};
+
+bool operator<(const WapNode &t1, const WapNode &t2) {
+	double a = 0.f;
+	a += (abs(t1.node->x[0] - t2.node->x[0]) + abs(t1.node->x[1] - t2.node->x[1]) + abs(t1.node->x[2] - t2.node->x[2]));
+	if(a <= 2e-4)
+		return false;
+	return ((t1.node->x[0] < t2.node->x[0]) || 
+		((t1.node->x[0] == t2.node->x[0]) && (t1.node->x[1] < t2.node->x[1])) ||
+		((t1.node->x[0] == t2.node->x[0]) && (t1.node->x[1] == t2.node->x[1]) && (t1.node->x[2] < t2.node->x[2])));
+}
+
+struct WapVert {
+	WapVert(Vert * value) : vert(value) {}
+	Vert * vert;
+};
+
+bool operator<(const WapVert &t1, const WapVert &t2) {
+	double a = 0.f;
+	a += (abs(t1.vert->u[0] - t2.vert->u[0]) + abs(t1.vert->u[1] - t2.vert->u[1]));
+	if(a <= 2e-4)
+		return false;
+	return ((t1.vert->u[0] < t2.vert->u[0]) || 
+		((t1.vert->u[0] == t2.vert->u[0]) && (t1.vert->u[1] < t2.vert->u[1])));
+}
+
 void load_obj (Mesh &mesh, const string &filename) {
 	delete_mesh(mesh);
 	QFile file(filename.c_str());
@@ -123,6 +152,11 @@ void load_obj (Mesh &mesh, const string &filename) {
 		cout << "Error: failed to open file " << filename << endl;
 		return;
 	}
+	set<WapNode> nodeset;
+	set<WapVert> vertset;
+	map<int, int> vindexmap;
+	map<int, int> vtindexmap;
+	int nv = 0, nvt = 0;
 	while (!file.atEnd()) {
 		QString line;
 		line = file.readLine();
@@ -132,13 +166,41 @@ void load_obj (Mesh &mesh, const string &filename) {
 		if (keyword == "vt") {
 			Vec2 u;
 			linestream >> u[0] >> u[1];
-			mesh.add(new Vert(u));
+			// 利用set去重
+			WapVert wv(new Vert(u));
+			set<WapVert>::iterator iter = vertset.find(wv);
+			if(iter == vertset.end())
+			{
+				vtindexmap[nvt] = vertset.size();
+				vertset.insert(wv);
+				mesh.add(wv.vert);
+			}
+			else {
+				vtindexmap[nvt] = iter->vert->index;
+				//mesh.add(iter->vert, 1);
+				delete wv.vert;
+			}
+			nvt++;
 		} else if (keyword == "vl") {
 			linestream >> mesh.verts.back()->label;
 		} else if (keyword == "v") {
 			Vec3 x;
 			linestream >> x[0] >> x[1] >> x[2];
-			mesh.add(new Node(x, Vec3(0)));
+			// 利用set去重
+			WapNode wn(new Node(x, Vec3(0)));
+			set<WapNode>::iterator iter = nodeset.find(wn);
+			if(iter == nodeset.end())
+			{
+				vindexmap[nv] = nodeset.size();
+				nodeset.insert(wn);
+				mesh.add(wn.node);
+			}
+			else {
+				vindexmap[nv] = iter->node->index;
+				//mesh.add(iter->node, 1);
+				delete wn.node;
+			}
+			nv++;
 		} else if (keyword == "ny") {
 			Vec3 &y = mesh.nodes.back()->y;
 			linestream >> y[0] >> y[1] >> y[2];
@@ -166,11 +228,11 @@ void load_obj (Mesh &mesh, const string &filename) {
 				int v, n;
 				char c;
 				wstream >> n >> c >> v;
-				nodes.push_back(mesh.nodes[n-1]);
+				nodes.push_back(mesh.nodes[vindexmap[n-1]]);
 			   // if (!linestream.atEnd())                  // modified wunf 2013.12.11
-					verts.push_back(mesh.verts[v-1]);
+					verts.push_back(mesh.verts[vtindexmap[v-1]]);
 					/* else if (!nodes.back()->verts.empty())
-					verts.push_back(nodes.back()->verts[0]);
+					verts.push_back(nodes.back()->verts[0]);b
 					else {
 					verts.push_back(new Vert(project<2>(nodes.back()->x),
 					nodes.back()->label));
@@ -178,7 +240,10 @@ void load_obj (Mesh &mesh, const string &filename) {
 					}*/
 			}
 			for (int v = 0; v < verts.size(); v++)
-				connectvn(verts[v], nodes[v]);
+			{
+				if(!verts[v]->node)
+					connectvn(verts[v], nodes[v]);
+			}
 			vector<Face*> faces = triangulate(verts);
 			for (int f = 0; f < faces.size(); f++)
 				mesh.add(faces[f]);
@@ -210,27 +275,29 @@ static double angle (const Vec3 &x0, const Vec3 &x1, const Vec3 &x2) {
 vector<Face*> triangulate (const vector<Vert*> &verts) {
 	int n = verts.size();
 	double best_min_angle = 0;
-	int best_root = -1;
-	for (int i = 0; i < n; i++) {
-		double min_angle = infinity;
-		const Vert *vert0 = verts[i];
-		for (int j = 2; j < n; j++) {
-			const Vert *vert1 = verts[(i+j-1)%n], *vert2 = verts[(i+j)%n];
-			min_angle=min(min_angle,
-						  angle(vert0->node->x,vert1->node->x,vert2->node->x),
-						  angle(vert1->node->x,vert2->node->x,vert0->node->x),
-						  angle(vert2->node->x,vert0->node->x,vert1->node->x));
-		}
-		if (min_angle > best_min_angle) {
-			best_min_angle = min_angle;
-			best_root = i;
+	int best_root = 0;
+	if(n != 3) {
+		for (int i = 0; i < n; i++) {
+			double min_angle = infinity;
+			const Vert *vert0 = verts[i];
+			for (int j = 2; j < n; j++) {
+				const Vert *vert1 = verts[(i+j-1)%n], *vert2 = verts[(i+j)%n];
+				min_angle=min(min_angle,
+							  angle(vert0->node->x,vert1->node->x,vert2->node->x),
+							  angle(vert1->node->x,vert2->node->x,vert0->node->x),
+							  angle(vert2->node->x,vert0->node->x,vert1->node->x));
+			}
+			if (min_angle > best_min_angle) {
+				best_min_angle = min_angle;
+				best_root = i;
+			}
 		}
 	}
-	int i = best_root;
-	Vert* vert0 = verts[i];
+	int index = best_root;
+	Vert* vert0 = verts[index];
 	vector<Face*> tris;
 	for (int j = 2; j < n; j++) {
-		Vert *vert1 = verts[(i+j-1)%n], *vert2 = verts[(i+j)%n];
+		Vert *vert1 = verts[(index+j-1)%n], *vert2 = verts[(index+j)%n];
 		tris.push_back(new Face(vert0, vert1, vert2));
 	}
 	return tris;
