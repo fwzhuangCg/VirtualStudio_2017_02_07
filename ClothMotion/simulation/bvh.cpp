@@ -201,34 +201,28 @@ DeformBVHTree::Construct()
 	BOX total;
 	int count;
 
-	int num_vtx = _mdl->verts.size(),
-		num_tri = _mdl->faces.size();
+    int num_vtx = _mdl->verts.size(),
+        num_tri = _mdl->faces.size();
 
-	for (unsigned int i=0; i<num_vtx; i++) {
-		if(_mdl->verts[i]->node) // wunf modified 2013.12.9
-		{
-			total += _mdl->verts[i]->node->x;
-			if (_ccd)
-			{
-				total += _mdl->verts[i]->node->x0;
-			}
-		}
-	}
+    for (int i=0; i<num_vtx; i++) {
+        total += _mdl->verts[i]->node->x;
+        if (_ccd)
+            total += _mdl->verts[i]->node->x0;
+    }
 
-	count = num_tri;
+    count = num_tri;
 
-	BOX *tri_boxes = new BOX[count];
-	vec3f *tri_centers = new vec3f[count];
-
+    std::map<Face*, BOX> tri_boxes;
+    std::map<Face*, vec3f> tri_centers;
+	
 	aap  pln(total);
 
 	face_buffer = new Face*[count];
-	unsigned int left_idx = 0, right_idx = count;
-	unsigned int tri_idx = 0;
-
-	for (unsigned int i=0; i<num_tri; i++) {
-		tri_idx++;
-
+	int left_idx = 0, right_idx = count;
+	
+	for (int i=0; i<num_tri; i++) {
+    	Face* face = _mdl->faces[i];
+		
 		vec3f &p1 = _mdl->faces[i]->v[0]->node->x;
 		vec3f &p2 = _mdl->faces[i]->v[1]->node->x;
 		vec3f &p3 = _mdl->faces[i]->v[2]->node->x;
@@ -237,31 +231,30 @@ DeformBVHTree::Construct()
 		vec3f &pp3 = _mdl->faces[i]->v[2]->node->x0;
 
 		if (_ccd) {
-
-			tri_centers[tri_idx-1] = vec3f(
+			tri_centers[face] = vec3f(
 				(middle_xyz(0, p1, p2, p3)+middle_xyz(0, pp1, pp2, pp3))*0.5f,
 				(middle_xyz(1, p1, p2, p3)+middle_xyz(1, pp1, pp2, pp3))*0.5f,
 				(middle_xyz(2, p1, p2, p3)+middle_xyz(2, pp1, pp2, pp3))*0.5f);
 		} else {
-			tri_centers[tri_idx-1] = vec3f(
+			tri_centers[face] = vec3f(
 				middle_xyz(0, p1, p2, p3),
 				middle_xyz(1, p1, p2, p3),
 				middle_xyz(2, p1, p2, p3));
 		}
 
-		if (pln.inside(tri_centers[tri_idx-1]))
+		if (pln.inside(tri_centers[face]))
 			face_buffer[left_idx++] = _mdl->faces[i];
 		else
 			face_buffer[--right_idx] = _mdl->faces[i];
 
-		tri_boxes[tri_idx-1] += p1;
-		tri_boxes[tri_idx-1] += p2;
-		tri_boxes[tri_idx-1] += p3;
+		tri_boxes[face] += p1;
+		tri_boxes[face] += p2;
+		tri_boxes[face] += p3;
 
 		if (_ccd) {
-			tri_boxes[tri_idx-1] += pp1;
-			tri_boxes[tri_idx-1] += pp2;
-			tri_boxes[tri_idx-1] += pp3;
+			tri_boxes[face] += pp1;
+			tri_boxes[face] += pp2;
+			tri_boxes[face] += pp3;
 		}
 	}
 
@@ -279,9 +272,6 @@ DeformBVHTree::Construct()
 		_root->_left = new DeformBVHNode(_root, face_buffer, left_idx, tri_boxes, tri_centers);
 		_root->_right = new DeformBVHNode(_root, face_buffer+left_idx, count-left_idx, tri_boxes, tri_centers);
 	}
-
-	delete [] tri_boxes;
-	delete [] tri_centers;
 }
 
 DeformBVHTree::~DeformBVHTree()
@@ -310,18 +300,18 @@ DeformBVHNode::~DeformBVHNode()
 }
 
 // called by leaf
-DeformBVHNode::DeformBVHNode(DeformBVHNode *parent, Face *face, BOX *tri_boxes, vec3f *tri_centers)
+DeformBVHNode::DeformBVHNode(DeformBVHNode *parent, Face *face, std::map<Face*,BOX>& tri_boxes)
 {
 	_left = _right = NULL;
 	_parent = parent;
 	_face = face;
-	_box = tri_boxes[face->index];
+    _box = tri_boxes[face];
 	//_count = 1;
 	_active = true;
 }
 
 // called by nodes
-DeformBVHNode::DeformBVHNode(DeformBVHNode *parent, Face **lst, unsigned int lst_num, BOX *tri_boxes, vec3f *tri_centers)
+DeformBVHNode::DeformBVHNode(DeformBVHNode *parent, Face **lst, unsigned int lst_num, std::map<Face*,BOX>& tri_boxes, std::map<Face*,vec3f>& tri_centers)
 {
 	assert(lst_num > 0);
 	_left = _right = NULL;
@@ -332,24 +322,22 @@ DeformBVHNode::DeformBVHNode(DeformBVHNode *parent, Face **lst, unsigned int lst
 
 	if (lst_num == 1) {
 		_face = lst[0];
-		_box = tri_boxes[lst[0]->index];
+		_box = tri_boxes[lst[0]];
 	}
 	else { // try to split them
 		for (unsigned int t=0; t<lst_num; t++) {
-			int i=lst[t]->index;
-			_box += tri_boxes[i];
+			_box += tri_boxes[lst[t]];
 		}
 
 		if (lst_num == 2) { // must split it!
-			_left = new DeformBVHNode(this, lst[0], tri_boxes, tri_centers);
-			_right = new DeformBVHNode(this, lst[1], tri_boxes, tri_centers);
+			_left = new DeformBVHNode(this, lst[0], tri_boxes);
+			_right = new DeformBVHNode(this, lst[1], tri_boxes);
 		} else {
 			aap pln(_box);
 			unsigned int left_idx = 0, right_idx = lst_num-1;
 
 			for (unsigned int t=0; t<lst_num; t++) {
-				int i=lst[left_idx]->index;
-				if (pln.inside(tri_centers[i]))
+				if (pln.inside(tri_centers[lst[left_idx]]))
 					left_idx++;
 				else {// swap it
 					Face *tmp = lst[left_idx];
