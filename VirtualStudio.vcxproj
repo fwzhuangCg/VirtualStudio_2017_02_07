@@ -291,6 +291,7 @@
     <ClCompile Include="ClothMotion\simulation\auglag.cpp" />
     <ClCompile Include="ClothMotion\simulation\bah.cpp" />
     <ClCompile Include="ClothMotion\simulation\bvh.cpp" />
+    <ClCompile Include="ClothMotion\simulation\proxy.cpp" />
     <ClCompile Include="ClothMotion\simulation\simcloth.cpp" />
     <ClCompile Include="ClothMotion\simulation\collision.cpp" />
     <ClCompile Include="ClothMotion\simulation\collisionutil.cpp" />
@@ -434,6 +435,7 @@
     <ClInclude Include="ClothMotion\simulation\bah.h" />
     <ClInclude Include="ClothMotion\simulation\blockvectors.hpp" />
     <ClInclude Include="ClothMotion\simulation\bvh.h" />
+    <ClInclude Include="ClothMotion\simulation\proxy.hpp" />
     <ClInclude Include="ClothMotion\simulation\simcloth.h" />
     <ClInclude Include="ClothMotion\simulation\collision.h" />
     <ClInclude Include="ClothMotion\simulation\collisionutil.h" />

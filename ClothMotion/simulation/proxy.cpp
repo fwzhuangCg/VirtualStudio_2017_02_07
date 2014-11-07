@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -24,43 +24,50 @@
   UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-#ifndef BAH_H
-#define BAH_H
+#include "proxy.hpp"
+#include "simulation.h"
+#include "magic.h"
+#include "constraint.h"
+#include "geometry.h"
+#include "collisionutil.h"
 
-// Bounding area hierarchy for triangles in 2D
-// based on bvh.hpp
+using namespace std;
 
-#include "mesh.h"
-#include "util.h"
+FloorProxy::FloorProxy(Mesh& mesh){
+    update(mesh);
+}
 
-struct Box {
-    Vec2 umin, umax;
-    Box (): umin(Vec2(infinity)), umax(Vec2(-infinity)) {}
-    Box (const Vec2 &u): umin(u), umax(u) {}
-	Box &operator+= (const Vec2 &u);
-	Box &operator+= (const Box &box);
-    bool overlaps (const Box &box) const;
-    Vec2 size () const;
-    Vec2 center () const;
-};
+CollisionProxy* FloorProxy::clone(Mesh& mesh) {
+    return new FloorProxy(mesh);
+}
 
-struct BahNode {
-	Box box;
-	Face *face;
-	BahNode *parent;
-	BahNode *left;
-	BahNode *right;
-    BahNode ();
-	BahNode (BahNode*, Face*, const Box&);
-    BahNode (BahNode*, Face**, unsigned int, Box*, Vec2*);
-    ~BahNode ();
-};
+Constraint* FloorProxy::constraint(const Node* node) {
+    if (!is_free(node) || node->x[1] - center.x[1] > ::magic.repulsion_thickness)
+        return 0;
 
-BahNode *new_bah_tree (const Mesh &mesh);
-void delete_bah_tree (BahNode *root);
+    IneqCon *con = new IneqCon;
+    con->nodes[0] = (Node*)node;
+    con->nodes[1] = &center;
+    con->nodes[2] = 0;
+    con->nodes[3] = 0;
+    for (int n = 0; n < 4; n++)
+        con->free[n] = n == 0;
+    con->w[0] = 1;
+    con->w[1] = -1;
+    con->w[2] = 0;
+    con->w[3] = 0;
+    
+    con->stiff = ::magic.collision_stiffness * node->a;
+    con->n = Vec3(0,1,0);
+    
+    con->mu = sim.obs_friction;
+    return con;
+}
 
-typedef void (*BahCallback) (Face *face0, const Face *face1);
-void for_overlapping_faces (Face *face, const BahNode *node,
-                            BahCallback callback);
-
-#endif
+void FloorProxy::update(Mesh& mesh) {
+    double y = infinity;
+    for (size_t n=0; n<mesh.nodes.size(); n++)
+        if (mesh.nodes[n]->x[1] < y)
+            y = mesh.nodes[n]->x[1];
+    center.x = Vec3(0, y, 0);
+}

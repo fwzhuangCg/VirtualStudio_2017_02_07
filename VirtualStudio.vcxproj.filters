@@ -308,6 +308,9 @@
     <ClCompile Include="ClothMotion\simulation\simcloth.cpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClCompile>
+    <ClCompile Include="ClothMotion\simulation\proxy.cpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="abstractscene.h">
@@ -518,6 +521,9 @@
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
     <ClInclude Include="ClothMotion\simulation\simcloth.h">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="ClothMotion\simulation\proxy.hpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
   </ItemGroup>
