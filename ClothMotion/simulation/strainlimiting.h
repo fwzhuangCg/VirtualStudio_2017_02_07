@@ -27,8 +27,9 @@
 #ifndef STRAINLIMITING_H
 #define STRAINLIMITING_H
 
-#include "cmcloth.h"
+#include "simcloth.h"
 #include "constraint.h"
+#include <memory>
 
 typedef std::tr1::shared_ptr<SimCloth> SmtClothPtr;
 

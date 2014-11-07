@@ -27,7 +27,7 @@
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include "cmcloth.h"
+#include "simcloth.h"
 #include "constraint.h"
 #include "handle.h"
 #include "morph.h"
@@ -36,6 +36,7 @@
 #include "../timer.h"
 #include <string>
 #include <vector>
+#include <memory>
 
 typedef std::tr1::shared_ptr<SimCloth> SmtClothPtr;
 

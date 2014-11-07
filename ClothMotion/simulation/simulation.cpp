@@ -64,7 +64,7 @@ void validate_handles (const Simulation &sim);
 void prepare (Simulation &sim) {
 	sim.cloth_meshes.resize(sim.cloths.size());
 	for (int c = 0; c < sim.cloths.size(); c++) {
-		compute_masses(*sim.cloths[c]);
+		//compute_masses(*sim.cloths[c]);
 		sim.cloth_meshes[c] = &sim.cloths[c]->mesh;
 		update_x0(*sim.cloth_meshes[c]);
 	}

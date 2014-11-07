@@ -27,7 +27,7 @@
 #ifndef PROXIMITY_HPP
 #define PROXIMITY_HPP
 
-#include "cmcloth.h"
+#include "simcloth.h"
 #include "constraint.h"
 
 std::vector<Constraint*> proximity_constraints

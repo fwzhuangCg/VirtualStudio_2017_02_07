@@ -27,7 +27,7 @@
 #ifndef COLLISION_H
 #define COLLISION_H
 
-#include "cmcloth.h"
+#include "simcloth.h"
 #include "constraint.h"
 
 bool collision_response (std::vector<Mesh*> &meshes,

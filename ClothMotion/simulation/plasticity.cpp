@@ -64,7 +64,7 @@ void optimize_plastic_embedding (SimCloth &cloth);
 
 void plastic_update (SimCloth &cloth) {
 	Mesh &mesh = cloth.mesh;
-	const vector<std::tr1::shared_ptr<SimCloth::Material> > &materials = cloth.materials;
+	const vector<SimMaterial* > &materials = cloth.materials;
 	for (int f = 0; f < mesh.faces.size(); f++) {
 		Face *face = mesh.faces[f];
 		double S_yield = materials[face->label]->yield_curv;
@@ -107,11 +107,11 @@ struct EmbedOpt: public NLOpt {
 	void finalize (const double *x) const;
 };
 
-void reduce_stretching_stiffnesses (vector<std::tr1::shared_ptr<SimCloth::Material> > &materials);
-void restore_stretching_stiffnesses (vector<std::tr1::shared_ptr<SimCloth::Material> > &materials);
+void reduce_stretching_stiffnesses (vector<SimMaterial*> &materials);
+void restore_stretching_stiffnesses (vector<SimMaterial*> &materials);
 
 void optimize_plastic_embedding (SimCloth &cloth) {
-	// vector<SimCloth::Material> materials = cloth.materials;
+	// vector<SimMaterial> materials = cloth.materials;
 	reduce_stretching_stiffnesses(cloth.materials);
 	line_search_newtons_method(EmbedOpt(cloth), OptOptions().max_iter(1));
 	restore_stretching_stiffnesses(cloth.materials);
@@ -178,7 +178,7 @@ void EmbedOpt::finalize (const double *x) const {
 		mesh.nodes[n]->y = y0[n] + get_subvec(x, n);
 }
 
-void reduce_stretching_stiffnesses (vector<std::tr1::shared_ptr<SimCloth::Material> > &materials) {
+void reduce_stretching_stiffnesses (vector<SimMaterial*> &materials) {
 	for (int m = 0; m < materials.size(); m++)
 		for (int i = 0; i < 40; i++)
 			for (int j = 0; j < 40; j++)
@@ -186,7 +186,7 @@ void reduce_stretching_stiffnesses (vector<std::tr1::shared_ptr<SimCloth::Materi
 					materials[m]->stretching.s[i][j][k] *= 1e-2;
 }
 
-void restore_stretching_stiffnesses (vector<std::tr1::shared_ptr<SimCloth::Material> > &materials) {
+void restore_stretching_stiffnesses (vector<SimMaterial*> &materials) {
 	for (int m = 0; m < materials.size(); m++)
 		for (int i = 0; i < 40; i++)
 			for (int j = 0; j < 40; j++)

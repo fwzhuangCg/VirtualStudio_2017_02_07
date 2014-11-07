@@ -27,7 +27,7 @@
 #ifndef POPFILTER_H
 #define POPFILTER_H
 
-#include "cmcloth.h"
+#include "simcloth.h"
 #include "constraint.h"
 
 void apply_pop_filter (SimCloth &cloth, const std::vector<Constraint*> &cons,

@@ -27,7 +27,7 @@
 #ifndef PLASTICITY_H
 #define PLASTICITY_H
 
-#include "cmcloth.h"
+#include "simcloth.h"
 
 void reset_plasticity (SimCloth &cloth);
 

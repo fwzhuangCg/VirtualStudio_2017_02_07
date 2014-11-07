@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -27,46 +27,36 @@
 #ifndef CMCLOTH_H
 #define CMCLOTH_H
 
-//#include "dde.hpp"
+#include "dde.hpp"
 #include "mesh.h"
-#include <memory>
 
-typedef Vec<4> Vec4;
-
-struct StretchingData {Vec4 d[2][5];};
-
-struct StretchingSamples {Vec4 s[40][40][40];};
-
-struct BendingData {double d[3][5];};
-
-struct SimCloth {
-	Mesh mesh;
-	struct Material {
-		double density; // area density
-		StretchingSamples stretching;
-		BendingData bending;
-		double damping; // stiffness-proportional damping coefficient
-		double strain_min, strain_max; // strain limits
-		double yield_curv, weakening; // plasticity parameters
-	};
-	std::vector<std::tr1::shared_ptr<Material> > materials;
-	struct Remeshing {
-		double refine_angle, refine_compression, refine_velocity;
-		double size_min, size_max; // size limits
-		double aspect_min; // aspect ratio control
-	} remeshing;
+struct SimMaterial {
+    double density; // area density
+    StretchingSamples stretching;
+    BendingData bending;
+    double damping; // stiffness-proportional damping coefficient
+    double strain_min, strain_max; // strain limits
+    double yield_curv, weakening; // plasticity parameters
+    double yield_stretch, plastic_flow, plastic_limit;
+    bool use_dde; // use DDE material files
+    double thickness;
+    double alt_stretching, alt_bending, alt_poisson; // alternative material model
+    double toughness, fracture_bend_thickness; // fracture toughness
 };
 
-void compute_masses (SimCloth &cloth);
+struct Remeshing {
+    double refine_angle, refine_compression, refine_velocity;
+    double size_min, size_max, size_uniform; // size limits
+    double aspect_min; // aspect ratio control
+    double refine_fracture;
+};
 
-Vec4 evaluate_stretching_sample (const Mat2x2 &G, const StretchingData &data);
+struct SimCloth {
+    Mesh mesh;
+    std::vector<SimMaterial*> materials;    
+    Remeshing remeshing;
+};
 
-void evaluate_stretching_samples (StretchingSamples &samples,
-	const StretchingData &data);
-
-Vec4 stretching_stiffness (const Mat2x2 &G, const StretchingSamples &samples);
-
-double bending_stiffness (const Edge *edge, int side, const BendingData &data,
-	double initial_angle=0);
+void compute_material (SimMaterial& mat, double Y);
 
 #endif

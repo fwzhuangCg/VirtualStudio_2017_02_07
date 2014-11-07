@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -24,16 +24,26 @@
   UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-#ifndef DYNAMICREMESH_H
-#define DYNAMICREMESH_H
+#ifndef DDE_HPP
+#define DDE_HPP
 
-#include <map>
-#include "simcloth.h"
-#include "nearobs.h"
+#include "sparse.hpp"
+#include "util.h"
 
-void static_remesh (SimCloth &cloth);
+typedef Vec<4> Vec4;
 
-void dynamic_remesh (SimCloth &cloth, const std::vector<Plane> &planes,
-                     bool plasticity);
+struct StretchingData {Vec4 d[2][5];};
+
+struct StretchingSamples {Vec4 s[40][40][40];};
+
+struct BendingData {double d[3][5];};
+
+void evaluate_stretching_samples (StretchingSamples &samples,
+                                  const StretchingData &data);
+
+Vec4 stretching_stiffness (const Mat2x2 &G, const StretchingSamples &samples);
+
+double bending_stiffness (const Edge *edge, int side, const BendingData &data, 
+						  double l, double theta, double initial_angle=0);
 
 #endif

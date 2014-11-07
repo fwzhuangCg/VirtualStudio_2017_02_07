@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -24,16 +24,13 @@
   UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-#ifndef DYNAMICREMESH_H
-#define DYNAMICREMESH_H
-
-#include <map>
 #include "simcloth.h"
-#include "nearobs.h"
 
-void static_remesh (SimCloth &cloth);
+using namespace std;
 
-void dynamic_remesh (SimCloth &cloth, const std::vector<Plane> &planes,
-                     bool plasticity);
-
-#endif
+void compute_material (SimMaterial& mat, double Y) {
+	double A = Y / (1.0 - sq(mat.alt_poisson));
+    mat.alt_stretching = A * mat.thickness;
+    mat.alt_bending = A / 12.0 * mat.thickness * sq(mat.thickness);
+    mat.toughness *= mat.thickness;
+}

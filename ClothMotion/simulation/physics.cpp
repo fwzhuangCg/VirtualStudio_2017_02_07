@@ -35,7 +35,7 @@ using namespace std;
 
 static const bool verbose = false;
 
-static const vector<std::tr1::shared_ptr<SimCloth::Material> > *materials;
+static const vector<SimMaterial*> *materials;
 
 typedef Mat<9,9> Mat9x9;
 typedef Mat<9,6> Mat9x6;

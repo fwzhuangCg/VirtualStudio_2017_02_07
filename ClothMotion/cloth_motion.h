@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 #include <fstream>
-#include "simulation\cmcloth.h"
+#include "simulation\simcloth.h"
 
 struct Simulation;
 struct Mesh;

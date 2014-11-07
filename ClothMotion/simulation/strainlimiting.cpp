@@ -40,8 +40,8 @@ vector<Vec2> get_strain_limits (const vector<SmtClothPtr> &cloths) {
 		int f0 = strain_limits.size();
 		strain_limits.resize(strain_limits.size() + cloth.mesh.faces.size());
 		for (int f = 0; f < mesh.faces.size(); f++) {
-			const SimCloth::Material *material =
-				cloth.materials[mesh.faces[f]->label].get();
+			const SimMaterial *material =
+				cloth.materials[mesh.faces[f]->label];
 			strain_limits[f0+f] = Vec2(material->strain_min,
 									   material->strain_max);
 		}

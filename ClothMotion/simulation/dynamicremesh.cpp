@@ -38,7 +38,7 @@ using namespace std;
 
 static const bool verbose = false;
 
-static SimCloth::Remeshing *remeshing;
+static Remeshing *remeshing;
 static bool plasticity;
 
 void create_vert_sizing (Mesh &mesh, const vector<Plane> &planes);
@@ -110,7 +110,7 @@ void static_remesh (SimCloth &cloth) {
 		delete mesh.verts[v]->sizing;
 	update_indices(mesh);
 	compute_ms_data(mesh);
-	compute_masses(cloth);
+	//compute_masses(cloth);
 }
 
 void dynamic_remesh (SimCloth &cloth, const vector<Plane> &planes,
@@ -133,7 +133,7 @@ void dynamic_remesh (SimCloth &cloth, const vector<Plane> &planes,
 	destroy_vert_sizing(mesh);
 	update_indices(mesh);
 	compute_ms_data(mesh);
-	compute_masses(cloth);
+	//compute_masses(cloth);
 }
 
 // Sizing

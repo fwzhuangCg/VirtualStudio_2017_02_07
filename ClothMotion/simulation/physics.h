@@ -27,7 +27,7 @@
 #ifndef PHYSICS_H
 #define PHYSICS_H
 
-#include "cmcloth.h"
+#include "simcloth.h"
 #include "geometry.h"
 #include "simulation.h"
 #include <vector>

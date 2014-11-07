@@ -212,9 +212,6 @@
     <ClCompile Include="ClothMotion\simulation\bvh.cpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClCompile>
-    <ClCompile Include="ClothMotion\simulation\cmcloth.cpp">
-      <Filter>ClothMotion\simulation</Filter>
-    </ClCompile>
     <ClCompile Include="ClothMotion\simulation\collision.cpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClCompile>
@@ -304,6 +301,12 @@
     </ClCompile>
     <ClCompile Include="triangulate.cpp">
       <Filter>ClothMotion</Filter>
+    </ClCompile>
+    <ClCompile Include="ClothMotion\simulation\dde.cpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClCompile>
+    <ClCompile Include="ClothMotion\simulation\simcloth.cpp">
+      <Filter>ClothMotion\simulation</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -418,9 +421,6 @@
     <ClInclude Include="ClothMotion\simulation\bvh.h">
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
-    <ClInclude Include="ClothMotion\simulation\cmcloth.h">
-      <Filter>ClothMotion\simulation</Filter>
-    </ClInclude>
     <ClInclude Include="ClothMotion\simulation\collision.h">
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
@@ -513,6 +513,12 @@
     </ClInclude>
     <ClInclude Include="triangulate.h">
       <Filter>ClothMotion</Filter>
+    </ClInclude>
+    <ClInclude Include="ClothMotion\simulation\dde.hpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="ClothMotion\simulation\simcloth.h">
+      <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

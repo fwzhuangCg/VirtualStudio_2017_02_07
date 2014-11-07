@@ -124,7 +124,7 @@ void ClothHandler::add_clothes_to_handler(const char * filename)
 
 	// init material
 	std::string mat_file;
-	std::tr1::shared_ptr<SimCloth::Material> material(new SimCloth::Material);
+	SimMaterial *material = new SimMaterial;
 	fs >> tab >> mat_file;
 	mat_file = "material/" + mat_file + ".txt";
 	std::fstream matfs(mat_file);
@@ -287,7 +287,7 @@ void ClothHandler::init_simulation()
 	{
 		for (int m = 0; m < sim_->cloths[c]->materials.size(); m++) 
 		{
-			std::tr1::shared_ptr<SimCloth::Material> mat = sim_->cloths[c]->materials[m];
+			SimMaterial *mat = sim_->cloths[c]->materials[m];
 			if (mat->strain_min != infinity || mat->strain_max != infinity)
 				has_strain_limits = true;
 			if (mat->yield_curv != infinity)
@@ -479,7 +479,7 @@ void ClothHandler::init_cloth(SimCloth &cloth)
 
 	// init material
 	std::string mat_file;
-	std::tr1::shared_ptr<SimCloth::Material> material(new SimCloth::Material);
+	SimMaterial *material = new SimMaterial;
 	fs >> tab >> mat_file;
 	mat_file = "material/" + mat_file + ".txt";
 	std::fstream matfs(mat_file);
