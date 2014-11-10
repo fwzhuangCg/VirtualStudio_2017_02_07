@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -29,7 +29,6 @@
 
 #include "mesh.h"
 
-bool separate (std::vector<Mesh*> &meshes, const std::vector<Mesh*> &old_meshes,
-               const std::vector<Mesh*> &obs_meshes);
+void separate (std::vector<Mesh*> &meshes, const std::vector<Mesh*> &obs_meshes);
 
 #endif

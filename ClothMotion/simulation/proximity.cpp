@@ -155,10 +155,10 @@ vector<Constraint*> proximity_constraints (vector<Mesh*> &meshes,
 	}
 
 
-    if (consistency_check) {
+    /*if (consistency_check) {
 		cout << "> proximity2: " << endl;
 		test_state(cons, "/tmp/cs");
-	}
+	}*/
 
     destroy_accel_structs(accs);
     destroy_accel_structs(obs_accs);
