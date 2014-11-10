@@ -320,6 +320,9 @@
     <ClCompile Include="ClothMotion\simulation\referenceshape.cpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClCompile>
+    <ClCompile Include="ClothMotion\simulation\breaking.cpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="abstractscene.h">
@@ -542,6 +545,9 @@
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
     <ClInclude Include="ClothMotion\simulation\referenceshape.hpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="ClothMotion\simulation\breaking.hpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
   </ItemGroup>

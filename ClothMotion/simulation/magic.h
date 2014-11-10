@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -37,6 +37,9 @@ struct Magic {
     double rib_stiffening;
     bool combine_tensors;
     bool preserve_creases;
+    bool add_jitter;
+    double separation_step_size;
+    int relax_method, max_cracks;
     Magic ():
         fixed_high_res_mesh(false),
         handle_stiffness(1e3),
@@ -46,7 +49,11 @@ struct Magic {
         edge_flip_threshold(1e-2),
         rib_stiffening(1),
         combine_tensors(true),
-        preserve_creases(false) {}
+        preserve_creases(false),
+        add_jitter(false),
+        separation_step_size(1e-2),
+        relax_method(0),
+        max_cracks(100) {}
 };
 
 extern Magic magic;
