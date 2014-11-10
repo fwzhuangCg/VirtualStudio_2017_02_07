@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -31,7 +31,7 @@
 #include "constraint.h"
 
 std::vector<Constraint*> proximity_constraints
-    (const std::vector<Mesh*> &meshes, const std::vector<Mesh*> &obs_meshes,
-     double friction, double obs_friction);
+    (std::vector<Mesh*> &meshes, const std::vector<Mesh*> &obs_meshes,
+     double friction, double obs_friction, bool proxy_only = false);
 
 #endif

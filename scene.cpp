@@ -700,7 +700,7 @@ const QVector4D Scene::ori_color_[4] = {
 void Scene::prepare_scene_cloth(SmtClothPtr simcloth)
 {
 	Cloth * cloth = new Cloth(simcloth);
-	cloth_handler_->add_clothes_to_handler(simcloth);
+	cloth_handler_->add_clothes_to_handler(simcloth.get());
 	clothes_.push_back(cloth);
 	cloth_textures_.push_back(TexturePtr(NULL));
 	color_.push_back(ori_color_[(clothes_.size() - 1) % 4]);
