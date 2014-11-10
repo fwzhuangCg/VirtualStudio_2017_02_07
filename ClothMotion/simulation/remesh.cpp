@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -25,14 +25,28 @@
 */
 
 #include "remesh.h"
-#include "blockvectors.hpp"
+
+#include "blockvectors.h"
 #include "geometry.h"
+#include "io.h"
+#include "localopt.hpp"
 #include "magic.h"
+#include "plasticity.h"
+#include "proximity.h"
+#include "referenceshape.hpp"
 #include "util.h"
+
 #include <assert.h>
 #include <cstdlib>
 #include <cstdio>
 using namespace std;
+
+// Helpers
+template <class T> static void delete_all(const vector<T>& a) { for(size_t i=0; i<a.size(); i++) delete a[i]; }
+template <class T> static void remove_all(const vector<T>& a, Mesh& m) { for(size_t i=0; i<a.size(); i++) m.remove(a[i]); }
+template <class T> static void add_all(const vector<T>& a, Mesh& m) { for(size_t i=0; i<a.size(); i++) m.add(a[i]); }
+template <class T> static void include_all(const vector<T>& a, vector<T>& b) { for(size_t i=0; i<a.size(); i++) include(a[i],b); }
+template <class T> static void exclude_all(const vector<T>& a, vector<T>& b) { for(size_t i=0; i<a.size(); i++) exclude(a[i],b); }
 
 RemeshOp RemeshOp::inverse () const {
     RemeshOp iop;
@@ -47,35 +61,63 @@ RemeshOp RemeshOp::inverse () const {
     return iop;
 }
 
+void RemeshOp::cancel() {
+	delete_all(added_verts);
+	delete_all(added_nodes);
+	delete_all(added_edges);
+	delete_all(added_faces);
+    added_edges.clear();
+    added_faces.clear();
+    added_nodes.clear();
+    added_verts.clear();
+    removed_edges.clear();
+    removed_faces.clear();
+    removed_nodes.clear();
+    removed_verts.clear();
+}
+
 void RemeshOp::apply (Mesh &mesh) const {
-    // cout << "removing " << removed_faces << ", " << removed_edges << ", " << removed_verts << " and adding " << added_verts << ", " << added_edges << ", " << added_faces << endl;
-    for (int i = 0; i < removed_faces.size(); i++)
-        mesh.remove(removed_faces[i]);
-    for (int i = 0; i < removed_edges.size(); i++)
-        mesh.remove(removed_edges[i]);
-    for (int i = 0; i < removed_nodes.size(); i++)
-        mesh.remove(removed_nodes[i]);
-    for (int i = 0; i < removed_verts.size(); i++)
-        mesh.remove(removed_verts[i]);
-    for (int i = 0; i < added_verts.size(); i++)
-        mesh.add(added_verts[i]);
-    for (int i = 0; i < added_nodes.size(); i++)
-        mesh.add(added_nodes[i]);
-    for (int i = 0; i < added_edges.size(); i++)
-        mesh.add(added_edges[i]);
-    for (int i = 0; i < added_faces.size(); i++)
-        mesh.add(added_faces[i]);
+	remove_all(removed_faces, mesh);
+	remove_all(removed_edges, mesh);
+	remove_all(removed_nodes, mesh);
+	remove_all(removed_verts, mesh);
+	add_all(added_verts, mesh);
+	add_all(added_nodes, mesh);
+	add_all(added_edges, mesh);
+	add_all(added_faces, mesh);
+    for (size_t f = 0; f < added_faces.size(); f++)
+        compute_ms_data(added_faces[f]);
+    for (size_t f = 0; f < added_faces.size(); f++)
+        for (int i = 0; i < 3; i++)
+            compute_ms_data(added_faces[f]->v[i]->node);
 }
 
 void RemeshOp::done () const {
-    for (int i = 0; i < removed_verts.size(); i++)
-        delete removed_verts[i];
-    for (int i = 0; i < removed_nodes.size(); i++)
-        delete removed_nodes[i];
-    for (int i = 0; i < removed_edges.size(); i++)
-        delete removed_edges[i];
-    for (int i = 0; i < removed_faces.size(); i++)
-        delete removed_faces[i];
+	delete_all(removed_verts);
+	delete_all(removed_nodes);
+	delete_all(removed_edges);
+	delete_all(removed_faces);
+}
+
+void RemeshOp::set_null(std::vector<Edge*>& v) {
+	for (size_t i=0; i<v.size(); i++)
+		if (is_in(v[i], removed_edges))
+			v[i] = 0;
+}
+
+void RemeshOp::update(std::vector<Face*>& v) {
+	exclude_all(removed_faces, v);
+	include_all(added_faces, v);
+}
+
+void RemeshOp::update(std::vector<Edge*>& v) {
+    exclude_all(removed_edges, v);
+    include_all(added_edges, v);
+}
+
+void RemeshOp::update(std::vector<Node*>& v) {
+    exclude_all(removed_nodes, v);
+    include_all(added_nodes, v);
 }
 
 ostream &operator<< (ostream &out, const RemeshOp &op) {
@@ -86,229 +128,172 @@ ostream &operator<< (ostream &out, const RemeshOp &op) {
     return out;
 }
 
-template <typename T>
-void compose_removal (T *t, vector<T*> &added, vector<T*> &removed) {
-    int i = find(t, added);
-    if (i != -1) {
-        remove(i, added);
-        delete t;
-    } else
-        removed.push_back(t);
+// Project new vertex onto material-space mesh
+
+template<Space s>
+Vec3 safe_normal(Face* face) {
+	if (!face) return Vec3(0);
+	const Vec3 a = pos<s>(face->v[1])-pos<s>(face->v[0]);
+	const Vec3 b = pos<s>(face->v[2])-pos<s>(face->v[0]);
+	Vec3 c = cross(a,b);
+	if (fabs(dot(normalize(a),normalize(b))) > 0.9 && norm(c) < 1e-6) 
+		return Vec3(0); // unstable normal
+	return normalize(c);
 }
 
-RemeshOp compose (const RemeshOp &op1, const RemeshOp &op2) {
-    RemeshOp op = op1;
-    for (int i = 0; i < op2.removed_verts.size(); i++)
-        compose_removal(op2.removed_verts[i], op.added_verts, op.removed_verts);
-    for (int i = 0; i < op2.removed_nodes.size(); i++)
-        compose_removal(op2.removed_nodes[i], op.added_nodes, op.removed_nodes);
-    for (int i = 0; i < op2.removed_edges.size(); i++)
-        compose_removal(op2.removed_edges[i], op.added_edges, op.removed_edges);
-    for (int i = 0; i < op2.removed_faces.size(); i++)
-        compose_removal(op2.removed_faces[i], op.added_faces, op.removed_faces);
-    for (int i = 0; i < op2.added_verts.size(); i++)
-        op.added_verts.push_back(op2.added_verts[i]);
-    for (int i = 0; i < op2.added_nodes.size(); i++)
-        op.added_nodes.push_back(op2.added_nodes[i]);
-    for (int i = 0; i < op2.added_faces.size(); i++)
-        op.added_faces.push_back(op2.added_faces[i]);
-    for (int i = 0; i < op2.added_edges.size(); i++)
-        op.added_edges.push_back(op2.added_edges[i]);
-    return op;
+void project_vertex(Vert *vnew, Edge* edge, int s, double d) {
+	Vert *v0 = edge_vert(edge, s, s), *v1 = edge_vert(edge, s, 1-s);
+	if (s != 0) d = 1-d;
+	Vec3 n = safe_normal<MS>(edge->adjf[0]) + safe_normal<MS>(edge->adjf[1]);
+	Vec3 u = (1-d)*v0->u + d*v1->u;
+	if (norm(n) > 0.2) {
+		if (!edge->n[0]->mesh->ref->raycast(u, normalize(n))) {
+	        cout << "split:raycast failed" << endl;
+	        exit(1);
+        }
+	}
+	vnew->u = u;
+    vnew->sizing = (1.0-d)*v0->sizing + d*v1->sizing;
 }
 
-// Fake physics for midpoint evaluation
+// Helpers for localopt
 
-Mat2x3 derivative_matrix (const Vec2 &u0, const Vec2 &u1, const Vec2 &u2) {
-    Mat2x2 Dm = Mat2x2(u1-u0, u2-u0);
-    Mat2x2 invDm = Dm.inv();
-    return invDm.t()*Mat2x3::rows(Vec3(-1,1,0), Vec3(-1,0,1));
-}
-
-double area (const Vec2 &u0, const Vec2 &u1, const Vec2 &u2) {
-    return wedge(u1-u0, u2-u0)/2;
-}
-
-template <int n> struct Quadratic {
-    Mat<n*3,n*3> A;
-    Vec<n*3> b;
-    Quadratic (): A(0), b(0) {}
-    Quadratic (const Mat<n*3,n*3> &A, const Vec<n*3> &b): A(A), b(b) {}
-};
-template <int n>
-Quadratic<n> &operator*= (Quadratic<n> &q, double a) {
-    q.A *= a; q.b *= a; return q;}
-template <int n>
-Quadratic<n> &operator+= (Quadratic<n> &q, const Quadratic<n> &r) {
-    q.A += r.A; q.b += r.b; return q;}
-template <int n>
-ostream &operator<< (ostream &out, const Quadratic<n> &q) {out << "<" << q.A << ", " << q.b << ">"; return out;}
-
-template <int m, int n, int p, int q>
-Mat<m*p,n*q> kronecker (const Mat<m,n> &A, const Mat<p,q> &B) {
-    Mat<m*p,n*q> C;
-    for (int i = 0; i < m; i++)
-        for (int j = 0; j < n; j++)
-            for (int k = 0; k < p; k++)
-                for (int l = 0; l < q; l++)
-                    C(i*p+k,j*q+l) = A(i,j)*B(k,l);
-    return C;
-}
-
-template <int m> Mat<m,1> colmat (const Vec<m> &v) {
-    Mat<1,m> A; for (int i = 0; i < m; i++) A(i,0) = v[i]; return A;}
-template <int n> Mat<1,n> rowmat (const Vec<n> &v) {
-    Mat<1,n> A; for (int i = 0; i < n; i++) A(0,i) = v[i]; return A;}
-
-template <Space s>
-Quadratic<3> stretching (const Vert *vert0, const Vert *vert1,
-                         const Vert *vert2) {
-    const Vec2 &u0 = vert0->u, &u1 = vert1->u, &u2 = vert2->u;
-    const Vec3 &x0 = pos<s>(vert0->node), &x1 = pos<s>(vert1->node),
-               &x2 = pos<s>(vert2->node);
-    Mat2x3 D = derivative_matrix(u0, u1, u2);
-    Mat3x2 F = Mat3x3(x0,x1,x2)*D.t(); // = (D * Mat3x3(x0,x1,x2).t()).t()
-    Mat2x2 G = (F.t()*F - Mat2x2(1))/2.;
-    // eps = 1/2(F'F - I) = 1/2([x_u^2 & x_u x_v \\ x_u x_v & x_v^2] - I)
-    // e = 1/2 k0 eps00^2 + k1 eps00 eps11 + 1/2 k2 eps11^2 + 1/2 k3 eps01^2
-    // grad e = k0 eps00 grad eps00 + ...
-    //        = k0 eps00 Du' x_u + ...
-    Vec3 du = D.row(0), dv = D.row(1);
-    Mat<3,9> Du = kronecker(rowmat(du), Mat3x3(1)),
-             Dv = kronecker(rowmat(dv), Mat3x3(1));
-    const Vec3 &xu = F.col(0), &xv = F.col(1); // should equal Du*mat_to_vec(X)
-    Vec<9> fuu = Du.t()*xu, fvv = Dv.t()*xv, fuv = (Du.t()*xv + Dv.t()*xu)/2.;
-    Vec<4> k;
-    k[0] = 1;
-    k[1] = 0;
-    k[2] = 1;
-    k[3] = 1;
-    Vec<9> grad_e = k[0]*G(0,0)*fuu + k[2]*G(1,1)*fvv
-                  + k[1]*(G(0,0)*fvv + G(1,1)*fuu) + k[3]*G(0,1)*fuv;
-    Mat<9,9> hess_e = k[0]*(outer(fuu,fuu) + max(G(0,0),0.)*Du.t()*Du)
-                    + k[2]*(outer(fvv,fvv) + max(G(1,1),0.)*Dv.t()*Dv)
-                    + k[1]*(outer(fuu,fvv) + max(G(0,0),0.)*Dv.t()*Dv
-                            + outer(fvv,fuu) + max(G(1,1),0.)*Du.t()*Du)
-                    + k[3]*(outer(fuv,fuv));
-    // ignoring k[3]*G(0,1)*(Du.t()*Dv+Dv.t()*Du)/2.) term
-    // because may not be positive definite
-    double a = area(u0, u1, u2);
-    return Quadratic<3>(a*hess_e, a*grad_e);
-}
-
-double area (const Vec3 &x0, const Vec3 &x1, const Vec3 &x2) {
-    return norm(cross(x1-x0, x2-x0))/2;
-}
-Vec3 normal (const Vec3 &x0, const Vec3 &x1, const Vec3 &x2) {
-    return normalize(cross(x1-x0, x2-x0));
-}
-double dihedral_angle (const Vec3 &e, const Vec3 &n0, const Vec3 &n1) {
-    double cosine = dot(n0, n1), sine = dot(e, cross(n0, n1));
-    return -atan2(sine, cosine);
-}
-
-template <Space s>
-Quadratic<4> bending (double theta0, const Vert *vert0, const Vert *vert1,
-                                     const Vert *vert2, const Vert *vert3) {
-    const Vec3 &x0 = pos<s>(vert0->node), &x1 = pos<s>(vert1->node),
-               &x2 = pos<s>(vert2->node), &x3 = pos<s>(vert3->node);
-    Vec3 n0 = normal(x0,x1,x2), n1 = normal(x1,x0,x3);
-    double theta = dihedral_angle(normalize(x1-x0), n0, n1);
-    double l = norm(x0-x1);
-    double a0 = area(x0,x1,x2), a1 = area(x1,x0,x3);
-    double h0 = 2*a0/l, h1 = 2*a1/l;
-    double w_f0v0 = dot(x2-x1, x0-x1)/sq(l),
-           w_f0v1 = 1 - w_f0v0,
-           w_f1v0 = dot(x3-x1, x0-x1)/sq(l),
-           w_f1v1 = 1 - w_f1v0;
-    Vec<12> dtheta = mat_to_vec(Mat<3,4>(-(w_f0v0*n0/h0 + w_f1v0*n1/h1),
-                                         -(w_f0v1*n0/h0 + w_f1v1*n1/h1),
-                                         n0/h0,
-                                         n1/h1));
-    double ke = 1;
-    double shape = 1;//sq(l)/(2*(a0 + a1));
-    return Quadratic<4>((a0+a1)/4*ke*shape*outer(dtheta, dtheta)/2.,
-                        (a0+a1)/4*ke*shape*(theta-theta0)*dtheta/2.);
-}
-
-template <int n> Quadratic<1> restrict (const Quadratic<n> &q, int k) {
-    Quadratic<1> r;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++)
-            r.A(i,j) = q.A(k*3+i, k*3+j);
-        r.b[i] = q.b[k*3+i];
+void embedding_from_plasticity (const vector<Face*> &fs) {
+    vector<Node*> nodes;
+    vector<Face*> faces;
+    vector<Edge*> edges;
+    for (size_t f = 0; f < fs.size(); f++) {
+        const Face *face = fs[f];
+        include((Face*)face, faces);
+        for (int i = 0; i < 3; i++) {
+            include(face->v[i]->node, nodes);
+            const Edge *edge = face->adje[i];
+            include((Edge*)edge, edges);
+            int s = (face == edge->adjf[0] ? 0 : 1);
+            if (edge->adjf[1-s]) { // include adjacent "flap"
+                include(edge->adjf[1-s], faces);
+                include(edge_opp_vert(edge, 1-s)->node, nodes);
+            }
+        }
     }
-    return r;
+    for (size_t n = 0; n < nodes.size(); n++)
+        nodes[n]->y = nodes[n]->x;
+    vector<Constraint*> no_cons;
+    local_opt<PS>(nodes, faces, edges, no_cons);
 }
 
-template <Space s>
-void set_midpoint_position (const Edge *edge, Vert *vnew[2], Node *node) {
-    Quadratic<1> qs, qb;
-    for (int i = 0; i < 2; i++) {
-        if (!edge->adjf[i])
+void plasticity_from_embedding (const vector<Face*> &faces) {
+    for (size_t f = 0; f < faces.size(); f++) {
+        Face *face = faces[f];
+        if (face->material->plastic_flow == 0)
             continue;
-        const Vert *v0 = edge_vert(edge, i, i),
-                   *v1 = edge_vert(edge, i, 1-i),
-                   *v2 = edge_opp_vert(edge, i),
-                   *v = vnew[i];
-        qs += restrict(stretching<s>(v0, v, v2), 1);
-        qs += restrict(stretching<s>(v, v1, v2), 0);
-        qb += restrict(bending<s>(0, v, v2, v0, v1), 0);
-        // if (S == WS) REPORT(qb);
-        const Edge *e;
-        e = get_edge(v0->node, v2->node);
-        if (const Vert *v4 = edge_opp_vert(e, e->n[0]==v0->node ? 0 : 1))
-            qb += restrict(bending<s>(e->theta_ideal, v0, v2, v4, v), 3);
-        // if (S == WS) REPORT(qb);
-        e = get_edge(v1->node, v2->node);
-        if (const Vert *v4 = edge_opp_vert(e, e->n[0]==v1->node ? 1 : 0))
-            qb += restrict(bending<s>(e->theta_ideal, v1, v2, v, v4), 2);
-        // if (S == WS) REPORT(qb);
+        face->Sp_str = stretch_plasticity_from_embedding(face);
     }
-    if (edge->adjf[0] && edge->adjf[1]) {
-        const Vert *v2 = edge_opp_vert(edge, 0), *v3 = edge_opp_vert(edge, 1);
-        double theta = edge->theta_ideal;
-        qb += restrict(bending<s>(theta, edge_vert(edge, 0, 0), vnew[0],
-                                         v2, v3), 1);
-        // if (S == WS) REPORT(qb);
-        qb += restrict(bending<s>(theta, vnew[1], edge_vert(edge, 1, 1),
-                                         v2, v3), 0);
-        // if (S == WS) REPORT(qb);
+    vector<Edge*> edges;
+    for (size_t f = 0; f < faces.size(); f++)
+        for (int i = 0; i < 3; i++)
+            include(faces[f]->adje[i], edges);
+    for (size_t e = 0; e < edges.size(); e++) {
+        Edge *edge = edges[e];
+        if (!edge->adjf[0] || !edge->adjf[1])
+            continue;
+        if (edge->adjf[0]->material->yield_curv < infinity
+            || edge->adjf[1]->material->yield_curv < infinity)
+            edge->theta_ideal = dihedral_angle<PS>(edge);
+        else
+            edge->theta_ideal = dihedral_angle<MS>(edge);
     }
-    Quadratic<1> q;
-    q += qs;
-    q += qb;
-    q.A += Mat3x3(1e-3);
-    // if (S == WS) {
-    //     REPORT(pos<S>(node));
-    //     REPORT(qs.A);
-    //     REPORT(qs.b);
-    //     REPORT(qb.A);
-    //     REPORT(qb.b);
-    //     REPORT(-q.A.inv()*q.b);
-    // }
-    pos<s>(node) -= q.A.inv()*q.b;
+    for (size_t f = 0; f < faces.size(); f++)
+        recompute_Sp_bend(faces[f]);
+}
+
+struct PlasticityStash {
+    vector<Mat3x3> Sp_str;
+    vector<double> theta_ideal;
+    PlasticityStash (vector<Face*> &faces, vector<Edge*> &edges)
+        : Sp_str(faces.size()), theta_ideal(edges.size()) {
+        for (size_t f = 0; f < faces.size(); f++) {
+            Face *face = faces[f];
+            Sp_str[f] = face->Sp_str;
+            face->Sp_str = Mat3x3(1);
+        }
+        for (size_t e = 0; e < edges.size(); e++) {
+            Edge *edge = edges[e];
+            theta_ideal[e] = edge->theta_ideal;
+            edge->theta_ideal = dihedral_angle<MS>(edge);
+        }
+    }
+    void apply (vector<Face*> &faces, vector<Edge*> &edges) {
+        for (size_t f = 0; f < faces.size(); f++) {            
+            faces[f]->Sp_str = Sp_str[f];
+        }
+        for (size_t e = 0; e < edges.size(); e++) {
+            edges[e]->theta_ideal = theta_ideal[e];
+        }
+    }
+};
+
+void optimize_node (Node *node) {
+    vector<Node*> nodes(1, node);
+    vector<Face*> faces;
+    for (size_t v = 0; v < node->verts.size(); v++)
+        append(faces, node->verts[v]->adjf);
+    vector<Edge*> edges;
+    for (size_t f = 0; f < faces.size(); f++) {
+        const Face *face = faces[f];
+        for (int i = 0; i < 3; i++)
+            include(face->adje[i], edges);
+    }
+    vector<Constraint*> no_cons;
+    PlasticityStash stash(faces, edges);
+    local_opt<PS>(nodes, faces, edges, no_cons);
+    stash.apply(faces, edges);
+    local_opt<WS>(nodes, faces, edges, no_cons);
+}
+
+void local_pop_filter (const vector<Face*> &fs) {
+    vector<Node*> nodes;
+    vector<Face*> faces;
+    vector<Edge*> edges;
+    for (size_t f = 0; f < fs.size(); f++)
+        for (int i = 0; i < 3; i++)
+            include(fs[f]->v[i]->node, nodes);
+    for (size_t n = 0; n < nodes.size(); n++) {
+        for (size_t v = 0; v < nodes[n]->verts.size(); v++) {
+            const Vert *vert = nodes[n]->verts[v];
+            for (size_t f = 0; f < vert->adjf.size(); f++)
+                include(vert->adjf[f], faces);
+        }
+    }
+    for (size_t f = 0; f < faces.size(); f++)
+        for (int i = 0; i < 3; i++)
+            include(faces[f]->adje[i], edges);
+    vector<Constraint*> cons;
+    cons = proximity_constraints(sim.cloth_meshes, sim.obstacle_meshes,
+                                 sim.friction, sim.obs_friction, true);
+    local_opt<WS>(nodes, faces, edges, cons);
 }
 
 // The actual operations
 
-int combine_label (int l0, int l1) {return (l0==l1) ? l0 : 0;}
-
-RemeshOp split_edge (Edge* edge) {
-    RemeshOp op;
+RemeshOp split_edge (Edge* edge, double d) {
+    Mesh& mesh = *edge->n[0]->mesh;
+	RemeshOp op;
     Node *node0 = edge->n[0],
          *node1 = edge->n[1],
-         *node = new Node((node0->y + node1->y)/2.,
-                          (node0->x + node1->x)/2.,
-                          (node0->v + node1->v)/2.,
-                          combine_label(node0->label, node1->label));
-    node->acceleration = (node0->acceleration + node1->acceleration)/2.;
+         *node = new Node((1-d)*node0->y + d*node1->y,
+                          (1-d)*node0->x + d*node1->x,
+                          (1-d)*node0->v + d*node1->v, 
+                          0, //node0->label & node1->label,
+                          node0->flag & node1->flag,
+                          false);
+    node->acceleration = (1-d)*node0->acceleration + d*node1->acceleration;
     op.added_nodes.push_back(node);
     op.removed_edges.push_back(edge);
     op.added_edges.push_back(new Edge(node0, node, edge->theta_ideal,
-                                      edge->label));
+                                      edge->preserve));
     op.added_edges.push_back(new Edge(node, node1, edge->theta_ideal,
-                                      edge->label));
+                                      edge->preserve));
     Vert *vnew[2] = {NULL, NULL};
     for (int s = 0; s < 2; s++) {
         if (!edge->adjf[s])
@@ -317,53 +302,87 @@ RemeshOp split_edge (Edge* edge) {
              *v1 = edge_vert(edge, s, 1-s),
              *v2 = edge_opp_vert(edge, s);
         if (s == 0 || is_seam_or_boundary(edge)) {
-            vnew[s] = new Vert((v0->u + v1->u)/2.,
-                               combine_label(v0->label, v1->label));
-            connectvn(vnew[s], node);
+        	vnew[s] = new Vert(Vec3(0));
+        	project_vertex(vnew[s], edge, s, d);
+            connect(vnew[s], node);
             op.added_verts.push_back(vnew[s]);
         } else
             vnew[s] = vnew[0];
-        op.added_edges.push_back(new Edge(v2->node, node));
+        op.added_edges.push_back(new Edge(v2->node, node, 0, 0));
         Face *f = edge->adjf[s];
         op.removed_faces.push_back(f);
-        op.added_faces.push_back(new Face(v0, vnew[s], v2, f->label));
-        op.added_faces.push_back(new Face(vnew[s], v1, v2, f->label));
+        Face* nf0 = new Face(v0, vnew[s], v2, f->Sp_str, f->Sp_bend, f->material, f->damage);
+        Face* nf1 = new Face(vnew[s], v1, v2, f->Sp_str, f->Sp_bend, f->material, f->damage);
+        if (min(aspect(nf0), aspect(nf1)) < 1e-3) {
+            op.cancel();
+            return op;
+        }
+        op.added_faces.push_back(nf0);
+        op.added_faces.push_back(nf1);
     }
-    if (!::magic.preserve_creases) {
-        set_midpoint_position<PS>(edge, vnew, node);
-        set_midpoint_position<WS>(edge, vnew, node);
-    }
+    embedding_from_plasticity(op.removed_faces);
+    op.apply(mesh);
+    node->y = (1-d)*node0->y + d*node1->y;
+    optimize_node(node);
+    plasticity_from_embedding(op.added_faces);
+    local_pop_filter(op.added_faces);
     return op;
 }
 
 RemeshOp collapse_edge (Edge* edge, int i) {
-    RemeshOp op;
+	/*if (is_seam_or_boundary(edge)) {
+		Annotation::add(edge);
+		cout << "collapse" << endl;
+		cout << edge->n[i]->preserve << endl;
+		wait_key();
+	}*/
+	Mesh& mesh = *edge->n[0]->mesh;
+	RemeshOp op;
     Node *node0 = edge->n[i], *node1 = edge->n[1-i];
     op.removed_nodes.push_back(node0);
-    for (int e = 0; e < node0->adje.size(); e++) {
+    for (size_t e = 0; e < node0->adje.size(); e++) {
         Edge *edge1 = node0->adje[e];
         op.removed_edges.push_back(edge1);
         Node *node2 = (edge1->n[0]!=node0) ? edge1->n[0] : edge1->n[1];
         if (node2 != node1 && !get_edge(node1, node2))
             op.added_edges.push_back(new Edge(node1, node2, edge1->theta_ideal,
-                                              edge1->label));
+                                              edge1->preserve));
     }
     for (int s = 0; s < 2; s++) {
         Vert *vert0 = edge_vert(edge, s, i), *vert1 = edge_vert(edge, s, 1-i);
         if (!vert0 || (s == 1 && vert0 == edge_vert(edge, 0, i)))
             continue;
         op.removed_verts.push_back(vert0);
-        for (int f = 0; f < vert0->adjf.size(); f++) {
+        for (size_t f = 0; f < vert0->adjf.size(); f++) {
             Face *face = vert0->adjf[f];
             op.removed_faces.push_back(face);
             if (!is_in(vert1, face->v)) {
                 Vert *verts[3] = {face->v[0], face->v[1], face->v[2]};
                 replace(vert0, vert1, verts);
-                op.added_faces.push_back(new Face(verts[0], verts[1], verts[2],
-                                                  face->label));
+                Face* new_face = new Face(verts[0], verts[1], verts[2],
+                                          face->Sp_str, face->Sp_bend, face->material, face->damage);
+                op.added_faces.push_back(new_face);
+                // inversion test
+                if (dot(normal<MS>(face), normal<MS>(new_face)) < 0) {
+                    op.cancel();
+                    return RemeshOp();
+                }
+                // degenerate test
+                bool enforce = false;
+                double asp_old = aspect(face), asp_new = aspect(new_face);
+                if (asp_new < mesh.parent->remeshing.aspect_min/4 &&
+                    asp_old >= mesh.parent->remeshing.aspect_min/4 && !enforce) {
+                    op.cancel();
+                    return RemeshOp();
+                }
             }
         }
     }
+    //wait_key();
+    embedding_from_plasticity(op.removed_faces);
+    op.apply(mesh);
+    plasticity_from_embedding(op.added_faces);
+    local_pop_filter(op.added_faces);
     return op;
 }
 
@@ -372,12 +391,47 @@ RemeshOp flip_edge (Edge* edge) {
     Vert *vert0 = edge_vert(edge, 0, 0), *vert1 = edge_vert(edge, 1, 1),
          *vert2 = edge_opp_vert(edge, 0), *vert3 = edge_opp_vert(edge, 1);
     Face *face0 = edge->adjf[0], *face1 = edge->adjf[1];
+    double A = area(face0), B = area(face1);
+    Mat3x3 sp = (A * face0->Sp_str + B * face1->Sp_str) / (A+B);
+    Mat3x3 sb = (A * face0->Sp_bend + B * face1->Sp_bend) / (A+B);
+    double damage = (A * face0->damage + B * face1->damage) / (A+B);
     op.removed_edges.push_back(edge);
     op.added_edges.push_back(new Edge(vert2->node, vert3->node,
-                                      -edge->theta_ideal, edge->label));
+                                      -edge->theta_ideal, edge->preserve));
     op.removed_faces.push_back(face0);
     op.removed_faces.push_back(face1);
-    op.added_faces.push_back(new Face(vert0, vert3, vert2, face0->label));
-    op.added_faces.push_back(new Face(vert1, vert2, vert3, face1->label));
+    op.added_faces.push_back(new Face(vert0, vert3, vert2, sp, sb, face0->material, damage));
+    op.added_faces.push_back(new Face(vert1, vert2, vert3, sp, sb, face1->material, damage));
+    embedding_from_plasticity(op.removed_faces);
+    op.apply(*edge->n[0]->mesh);
+    plasticity_from_embedding(op.added_faces);
+    local_pop_filter(op.added_faces);
     return op;
+}
+
+bool try_move_node (Node* node, Edge* edge, double d) {
+    // TODO
+	if (d<1e-6) 
+		return true;
+    if (node->preserve)
+        return false;
+    vector<Face*> faces;
+    for (size_t v = 0; v < node->verts.size(); v++)
+        append(faces, node->verts[v]->adjf);
+    embedding_from_plasticity(faces);
+	int v = edge->n[0] == node ? 0 : 1;
+	if (v != 0) d = 1-d;
+	for (int i=0; i<2; i++) {
+		if (edge->adjf[i] && (i == 0 || is_seam_or_boundary(edge)))
+			project_vertex(edge_vert(edge, i, v), edge, i, d);
+	}
+    for (size_t f = 0; f < faces.size(); f++)
+        compute_ms_data(faces[f]);
+    for (size_t f = 0; f < faces.size(); f++)
+        for (int i = 0; i < 3; i++)
+            compute_ms_data(faces[f]->v[i]->node);
+    optimize_node(node);
+    plasticity_from_embedding(faces);
+    local_pop_filter(faces);
+	return true;
 }

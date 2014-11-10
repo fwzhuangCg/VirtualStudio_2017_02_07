@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -41,15 +41,21 @@ struct RemeshOp {
     RemeshOp inverse () const;
     void apply (Mesh &mesh) const;
     void done () const; // frees removed data
+    void cancel(); // aborts operations, resets RemeshOp
+
+    void set_null(std::vector<Edge*>& v);
+    void update(std::vector<Node*>& v);
+    void update(std::vector<Face*>& v);
+    void update(std::vector<Edge*>& v);
 };
 std::ostream &operator<< (std::ostream &out, const RemeshOp &op);
-
-RemeshOp compose (const RemeshOp &op1, const RemeshOp &op2);
 
 // These do not change the mesh directly,
 // they return a RemeshOp that you can apply() to the mesh
 
-RemeshOp split_edge (Edge *edge);
+bool try_move_node (Node* node, Edge* edge, double d);
+
+RemeshOp split_edge (Edge *edge, double d);
 
 RemeshOp collapse_edge (Edge *edge, int which); // which end to delete
 
