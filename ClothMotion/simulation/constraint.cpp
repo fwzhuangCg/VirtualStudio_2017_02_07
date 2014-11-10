@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -33,12 +33,13 @@ double EqCon::value (int *sign) {
     if (sign) *sign = 0;
     return dot(n, node->x - x);
 }
-MeshGrad EqCon::gradient () {MeshGrad grad; grad[node] = n; return grad;}
+MeshGrad EqCon::gradient () {MeshGrad grad; grad.push_back(MeshGradV(node,n)); return grad;}
 MeshGrad EqCon::project () {return MeshGrad();}
 double EqCon::energy (double value) {return stiff*sq(value)/2.;}
 double EqCon::energy_grad (double value) {return stiff*value;}
 double EqCon::energy_hess (double value) {return stiff;}
 MeshGrad EqCon::friction (double dt, MeshHess &jac) {return MeshGrad();}
+bool EqCon::contains(Node* _node) { return node == _node; }
 
 double GlueCon::value (int *sign) {
     if (sign) *sign = 0;
@@ -46,8 +47,8 @@ double GlueCon::value (int *sign) {
 }
 MeshGrad GlueCon::gradient () {
     MeshGrad grad;
-    grad[nodes[0]] = -n;
-    grad[nodes[1]] = n;
+    grad.push_back(MeshGradV(nodes[0],-n));
+    grad.push_back(MeshGradV(nodes[1],n));
     return grad;
 }
 MeshGrad GlueCon::project () {return MeshGrad();}
@@ -55,13 +56,15 @@ double GlueCon::energy (double value) {return stiff*sq(value)/2.;}
 double GlueCon::energy_grad (double value) {return stiff*value;}
 double GlueCon::energy_hess (double value) {return stiff;}
 MeshGrad GlueCon::friction (double dt, MeshHess &jac) {return MeshGrad();}
+bool GlueCon::contains(Node* _node) { return nodes[0] == _node || nodes[1] == _node; }
 
 double IneqCon::value (int *sign) {
     if (sign)
         *sign = 1;
     double d = 0;
     for (int i = 0; i < 4; i++)
-        d += w[i]*dot(n, nodes[i]->x);
+        if (nodes[i])
+            d += w[i]*dot(n, nodes[i]->x);
     d -= ::magic.repulsion_thickness;
     return d;
 }
@@ -69,7 +72,8 @@ double IneqCon::value (int *sign) {
 MeshGrad IneqCon::gradient () {
     MeshGrad grad;
     for (int i = 0; i < 4; i++)
-        grad[nodes[i]] = w[i]*n;
+        if (nodes[i])
+            grad.push_back(MeshGradV(nodes[i], w[i]*n));
     return grad;
 }
 
@@ -79,12 +83,12 @@ MeshGrad IneqCon::project () {
         return MeshGrad();
     double inv_mass = 0;
     for (int i = 0; i < 4; i++)
-        if (free[i])
+        if (nodes[i] && free[i])
             inv_mass += sq(w[i])/nodes[i]->m;
     MeshGrad dx;
     for (int i = 0; i < 4; i++)
-        if (free[i])
-            dx[nodes[i]] = -(w[i]/nodes[i]->m)/inv_mass*n*d;
+        if (nodes[i] && free[i])
+            dx.push_back(MeshGradV(nodes[i], -(w[i]/nodes[i]->m)/inv_mass*n*d));
     return dx;
 }
 
@@ -110,9 +114,11 @@ MeshGrad IneqCon::friction (double dt, MeshHess &jac) {
     Vec3 v = Vec3(0);
     double inv_mass = 0;
     for (int i = 0; i < 4; i++) {
-        v += w[i]*nodes[i]->v;
-        if (free[i])
-            inv_mass += sq(w[i])/nodes[i]->m;
+        if (nodes[i]) {
+            v += w[i]*nodes[i]->v;
+            if (free[i])
+                inv_mass += sq(w[i])/nodes[i]->m;
+        }
     }
     Mat3x3 T = Mat3x3(1) - outer(n,n);
     double vt = norm(T*v);
@@ -120,14 +126,40 @@ MeshGrad IneqCon::friction (double dt, MeshHess &jac) {
     // double f_by_v = mu*fn/max(vt, 1e-1);
     MeshGrad force;
     for (int i = 0; i < 4; i++) {
-        if (free[i]) {
-            force[nodes[i]] = -w[i]*f_by_v*T*v;
+        if (nodes[i] && free[i]) {
+            force.push_back(MeshGradV(nodes[i], -w[i]*f_by_v*T*v));
             for (int j = 0; j < 4; j++) {
                 if (free[j]) {
-                    jac[make_pair(nodes[i],nodes[j])] = -w[i]*w[j]*f_by_v*T;
+                    jac.push_back(MeshHessV(nodes[i], nodes[j], -w[i]*w[j]*f_by_v*T));
                 }
             }
         }
     }
     return force;
 }
+
+bool IneqCon::contains(Node *_node) {
+	for (int i=0; i<4; i++) {
+		if (w[i] && nodes[i] == _node)
+			return true;
+	}
+	return false;
+}
+/*
+// SERIALIZER 
+template<> void serializer<vector<Constraint*> >(vector<Constraint*>& x, Serialize& s, const string& n) { 
+	serializer_array(x,s,n); 
+	for (size_t i=0; i<x.size(); i++)
+		x[i]->serializer(s,n);
+}
+
+void IneqCon::serializer(Serialize& s, const std::string& name) {
+	for (int i=0; i<4; i++) {
+		::serializer(w[i],s,"w[i]");
+		if (w[i] && nodes[i])
+			::serializer(nodes[i]->index,s,"nodes[i]");
+	}
+	::serializer(stiff,s,"stiff");
+	::serializer(n,s,"n");
+}*/
+

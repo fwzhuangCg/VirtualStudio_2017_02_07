@@ -308,6 +308,18 @@
     <ClCompile Include="ClothMotion\simulation\proxy.cpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClCompile>
+    <ClCompile Include="ClothMotion\simulation\sepstrength.cpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClCompile>
+    <ClCompile Include="ClothMotion\simulation\subset.cpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClCompile>
+    <ClCompile Include="ClothMotion\simulation\localopt.cpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClCompile>
+    <ClCompile Include="ClothMotion\simulation\referenceshape.cpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="abstractscene.h">
@@ -518,6 +530,18 @@
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
     <ClInclude Include="ClothMotion\simulation\proxy.hpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="ClothMotion\simulation\sepstrength.hpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="ClothMotion\simulation\subset.hpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="ClothMotion\simulation\localopt.hpp">
+      <Filter>ClothMotion\simulation</Filter>
+    </ClInclude>
+    <ClInclude Include="ClothMotion\simulation\referenceshape.hpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
   </ItemGroup>

@@ -290,7 +290,10 @@
     <ClCompile Include="ClothMotion\cloth_motion.cpp" />
     <ClCompile Include="ClothMotion\simulation\auglag.cpp" />
     <ClCompile Include="ClothMotion\simulation\bvh.cpp" />
+    <ClCompile Include="ClothMotion\simulation\localopt.cpp" />
     <ClCompile Include="ClothMotion\simulation\proxy.cpp" />
+    <ClCompile Include="ClothMotion\simulation\referenceshape.cpp" />
+    <ClCompile Include="ClothMotion\simulation\sepstrength.cpp" />
     <ClCompile Include="ClothMotion\simulation\simcloth.cpp" />
     <ClCompile Include="ClothMotion\simulation\collision.cpp" />
     <ClCompile Include="ClothMotion\simulation\collisionutil.cpp" />
@@ -316,6 +319,7 @@
     <ClCompile Include="ClothMotion\simulation\simulation.cpp" />
     <ClCompile Include="ClothMotion\simulation\spline.cpp" />
     <ClCompile Include="ClothMotion\simulation\strainlimiting.cpp" />
+    <ClCompile Include="ClothMotion\simulation\subset.cpp" />
     <ClCompile Include="ClothMotion\simulation\taucs_util.cpp" />
     <ClCompile Include="ClothMotion\simulation\tensormax.cpp" />
     <ClCompile Include="ClothMotion\simulation\transformation.cpp" />
@@ -433,7 +437,10 @@
     <ClInclude Include="ClothMotion\simulation\auglag.h" />
     <ClInclude Include="ClothMotion\simulation\blockvectors.hpp" />
     <ClInclude Include="ClothMotion\simulation\bvh.h" />
+    <ClInclude Include="ClothMotion\simulation\localopt.hpp" />
     <ClInclude Include="ClothMotion\simulation\proxy.hpp" />
+    <ClInclude Include="ClothMotion\simulation\referenceshape.hpp" />
+    <ClInclude Include="ClothMotion\simulation\sepstrength.hpp" />
     <ClInclude Include="ClothMotion\simulation\simcloth.h" />
     <ClInclude Include="ClothMotion\simulation\collision.h" />
     <ClInclude Include="ClothMotion\simulation\collisionutil.h" />
@@ -460,6 +467,7 @@
     <ClInclude Include="ClothMotion\simulation\sparse.hpp" />
     <ClInclude Include="ClothMotion\simulation\spline.h" />
     <ClInclude Include="ClothMotion\simulation\strainlimiting.h" />
+    <ClInclude Include="ClothMotion\simulation\subset.hpp" />
     <ClInclude Include="ClothMotion\simulation\taucs_util.h" />
     <ClInclude Include="ClothMotion\simulation\tensormax.h" />
     <ClInclude Include="ClothMotion\simulation\transformation.h" />

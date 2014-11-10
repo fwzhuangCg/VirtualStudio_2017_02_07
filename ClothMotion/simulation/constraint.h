@@ -35,20 +35,27 @@
 #include <map>
 #include <vector>
 
-typedef std::map<Node*,Vec3> MeshGrad;
-typedef std::map<std::pair<Node*,Node*>,Mat3x3> MeshHess;
+struct MeshGradV { Node* node; Vec3 f; MeshGradV(Node* i, const Vec3& f) : node(i), f(f) {} };
+struct MeshHessV { Node* i; Node* j; Mat3x3 J; MeshHessV(Node *i, Node* j, const Mat3x3& J) : i(i), j(j), J(J) {}};
+
+typedef std::vector<MeshGradV> MeshGrad;
+typedef std::vector<MeshHessV> MeshHess;
 
 struct Constraint {
     virtual ~Constraint () {};
     virtual double value (int *sign=NULL) = 0;
     virtual MeshGrad gradient () = 0;
     virtual MeshGrad project () = 0;
+    virtual bool contains(Node* node) = 0;
     // energy function
     virtual double energy (double value) = 0;
     virtual double energy_grad (double value) = 0;
     virtual double energy_hess (double value) = 0;
     // frictional force
     virtual MeshGrad friction (double dt, MeshHess &jac) = 0;
+
+    // useful for debugging
+    //virtual void serializer(Serialize& s, const std::string& name) {};
 };
 
 struct EqCon: public Constraint {
@@ -57,6 +64,7 @@ struct EqCon: public Constraint {
     Vec3 x, n;
     double stiff;
     double value (int *sign=NULL);
+    bool contains(Node *node);
     MeshGrad gradient ();
     MeshGrad project ();
     double energy (double value);
@@ -70,6 +78,7 @@ struct GlueCon: public Constraint {
     Vec3 n;
     double stiff;
     double value (int *sign=NULL);
+    bool contains(Node *node);    
     MeshGrad gradient ();
     MeshGrad project ();
     double energy (double value);
@@ -88,6 +97,7 @@ struct IneqCon: public Constraint {
     double mu; // friction
     double stiff;
     double value (int *sign=NULL);
+    bool contains(Node *node);    
     MeshGrad gradient ();
     MeshGrad project ();
     double energy (double value);
