@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -43,6 +43,8 @@ struct Handle {
         double s = 1 - (t - end_time)/(fade_time + 1e-6);
         return sq(sq(s));
     }
+    virtual void add_forces(double t, std::vector<Vec3> &fext, std::vector<Mat3x3>& Jext) {}
+
 };
 
 struct NodeHandle: public Handle {
@@ -75,6 +77,16 @@ struct GlueHandle: public Handle {
         ns.push_back(nodes[1]);
         return ns;
     }
+};
+
+struct SoftHandle: public Handle {
+    Mesh *mesh;
+    Vec3 center;
+    double radius;
+    const Motion *motion;
+    std::vector<Constraint*> get_constraints (double t);
+    std::vector<Node*> get_nodes ();
+    void add_forces(double t, std::vector<Vec3> &fext, std::vector<Mat3x3>& Jext);
 };
 
 #endif

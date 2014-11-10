@@ -59,20 +59,20 @@ vector<Constraint*> CircleHandle::get_constraints (double t) {
     if (!s)
         return vector<Constraint*>();
     vector<Constraint*> cons;
-    for (int n = 0; n < mesh->nodes.size(); n++) {
+    for (int n = 0; n < (int)mesh->nodes.size(); n++) {
         Node *node = mesh->nodes[n];
         if (node->label != label)
             continue;
-        double theta = 2*M_PI*dot(node->verts[0]->u, u)/c;
+        double theta = 2*M_PI*dot(reduce_xy(node->verts[0]->u), u)/c;
         Vec3 x = xc + (dx0*cos(theta) + dx1*sin(theta))*c/(2*M_PI);
         if (motion)
             x = motion->pos(t).apply(x);
         double l = 0;
-        for (int e = 0; e < node->adje.size(); e++) {
+        for (int e = 0; e < (int)node->adje.size(); e++) {
             const Edge *edge = node->adje[e];
             if (edge->n[0]->label != label || edge->n[1]->label != label)
                 continue;
-            l += edge->l;
+            l += norm(edge->n[1]->x - edge->n[0]->x);
         }
         add_position_constraints(node, x, s*::magic.handle_stiffness*l, cons);
     }
@@ -93,6 +93,46 @@ vector<Constraint*> GlueHandle::get_constraints (double t) {
         cons.push_back(con);
     }
     return cons;
+}
+
+vector<Constraint*> SoftHandle::get_constraints (double t) {
+    return vector<Constraint*>();
+}
+    
+void SoftHandle::add_forces(double t, vector<Vec3> &fext, vector<Mat3x3>& Jext) {
+	double s = strength(t);
+	if (!s) return;
+	//Annotation::add((motion) ? motion->pos(t).apply(center) : center); 
+
+    for (size_t v = 0; v < mesh->verts.size(); v++) {
+        Vert *vert = mesh->verts[v];
+
+        double d = norm(vert->u - center)/radius;
+        if (d > 1.0 || !vert->node->active()) continue;
+        int ix = v;
+        
+        Vec3 x0 = (motion) ? motion->pos(t).apply(vert->u) : vert->u; 
+        Vec3 dx = vert->node->x-x0;
+
+        double w = (1.0 + sq(d) * (-3.0 + 2.0*d)) * ::magic.handle_stiffness * s *vert->node->a;
+        //w=0;
+        fext[ix] += -w * dx;
+        Jext[ix] += Mat3x3(-w);
+
+        vert->node->flag |= Node::FlagResolveUni;
+    }    
+}
+
+vector<Node*> SoftHandle::get_nodes() {
+    std::vector<Node*> nodes;
+    for (size_t v = 0; v < mesh->verts.size(); v++) {
+        Vert *vert = mesh->verts[v];
+        
+        double d = norm2(vert->u - center)/sq(radius);
+        if (d < 1.0)
+            nodes.push_back(vert->node);
+    }
+    return nodes;
 }
 
 void add_position_constraints (const Node *node, const Vec3 &x, double stiff,

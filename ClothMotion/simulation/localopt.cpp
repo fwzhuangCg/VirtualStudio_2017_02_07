@@ -121,11 +121,11 @@ void LocalOpt<s>::gradient (const double *x, double *g) const {
     	if (s == WS)
     		f += nodes[no]->m*nodes[no]->acceleration; // retain acceleration
         set_subvec(g, no, f);
-        if (is_bullshit(f)) {
+        /*if (is_bullshit(f)) {
             cout << "bs alert!" << endl;
             Annotation::add(nodes[no]);
             wait_key();
-        }
+        }*/
     }
 }
 

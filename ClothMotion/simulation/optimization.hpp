@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -111,5 +111,21 @@ template <int n> void set_subvec (double *x, int i, const Vec<n> &xi) {
     for (int j = 0; j < n; j++) x[i*n+j] = xi[j];}
 template <int n> void add_subvec (double *x, int i, const Vec<n> &xi) {
     for (int j = 0; j < n; j++) x[i*n+j] += xi[j];}
+
+inline Mat3x3 get_submat (SpMat<double> &A, int i, int j) {
+    Mat3x3 Aij;
+    for (int ii = 0; ii < 3; ii++) for (int jj = 0; jj < 3; jj++)
+        Aij(ii,jj) = A(i*3+ii, j*3+jj);
+    return Aij;
+}
+inline void set_submat (SpMat<double> &A, int i, int j, const Mat3x3 &Aij) {
+    for (int ii = 0; ii < 3; ii++) for (int jj = 0; jj < 3; jj++)
+        A(i*3+ii, j*3+jj) = Aij(ii,jj);
+}
+inline void add_submat (SpMat<double> &A, int i, int j, const Mat3x3 &Aij) {
+    for (int ii = 0; ii < 3; ii++) for (int jj = 0; jj < 3; jj++)
+        A(i*3+ii, j*3+jj) += Aij(ii,jj);
+}
+
 
 #endif
