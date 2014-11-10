@@ -1,7 +1,33 @@
-#ifndef VECTOR_H
-#define VECTOR_H
+/*
+  Copyright ©2013 The Regents of the University of California
+  (Regents). All Rights Reserved. Permission to use, copy, modify, and
+  distribute this software and its documentation for educational,
+  research, and not-for-profit purposes, without fee and without a
+  signed licensing agreement, is hereby granted, provided that the
+  above copyright notice, this paragraph and the following two
+  paragraphs appear in all copies, modifications, and
+  distributions. Contact The Office of Technology Licensing, UC
+  Berkeley, 2150 Shattuck Avenue, Suite 510, Berkeley, CA 94720-1620,
+  (510) 643-7201, for commercial licensing opportunities.
 
-//#include "winport.hpp" // aa: windows bindings, etc
+  IN NO EVENT SHALL REGENTS BE LIABLE TO ANY PARTY FOR DIRECT,
+  INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING
+  LOST PROFITS, ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS
+  DOCUMENTATION, EVEN IF REGENTS HAS BEEN ADVISED OF THE POSSIBILITY
+  OF SUCH DAMAGE.
+
+  REGENTS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+  FOR A PARTICULAR PURPOSE. THE SOFTWARE AND ACCOMPANYING
+  DOCUMENTATION, IF ANY, PROVIDED HEREUNDER IS PROVIDED "AS
+  IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
+  UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+*/
+
+#ifndef VECTORS_HPP
+#define VECTORS_HPP
+
+#include "winport.hpp" // aa: windows bindings, etc
 
 #include <cmath>
 #include <iostream>
@@ -21,15 +47,20 @@ template <> struct static_assertion_failure<true> {void operator() () {}};
 
 template <int n, typename T=double> class Vec {
 private:
-	T c[n];
+#if defined(_AVX)
+  __align(32) T c[n%4? 4*(1+n/4): n];
+#else
+  T c[n];
+#endif
 public:
-	Vec () {for (int i = 0; i < n; i++) c[i] = 0;}
-	explicit Vec (T x) {for (int i = 0; i < n; i++) c[i] = x;}
-	explicit Vec (T x, T y) {static_assert(n==2); c[0] = x; c[1] = y;}
-	explicit Vec (T x, T y, T z) {static_assert(n==3); c[0] = x; c[1] = y; c[2] = z;}
-	explicit Vec (T x, T y, T z, T w) {static_assert(n==4); c[0] = x; c[1] = y; c[2] = z; c[3] = w;}
-	T &operator[] (int i) {return c[i];}
-	const T &operator[] (int i) const {return c[i];}
+    Vec () {for (int i = 0; i < n; i++) c[i] = 0;}
+    explicit Vec (T x) {for (int i = 0; i < n; i++) c[i] = x;}
+    explicit Vec (T x, T y) {static_assert(n==2); c[0] = x; c[1] = y;}
+    explicit Vec (T x, T y, T z) {static_assert(n==3); c[0] = x; c[1] = y; c[2] = z;}
+    explicit Vec (T x, T y, T z, T w) {static_assert(n==4); c[0] = x; c[1] = y; c[2] = z; c[3] = w;}
+    explicit Vec (T v0, T v1, T v2, T v3, T v4, T v5) {static_assert(n==6); c[0] = v0; c[1] = v1; c[2] = v2; c[3] = v3; c[4] = v4; c[5] = v5; }
+    T &operator[] (int i) {return c[i];}
+    const T &operator[] (int i) const {return c[i];}
 };
 tpl VecnT operator+ (const VecnT &u) {return u;}
 tpl VecnT operator+ (const VecnT &u, const VecnT &v) {VecnT w; for (int i = 0; i < n; i++) w[i] = u[i] + v[i]; return w;}
@@ -51,8 +82,32 @@ tpl VecnT normalize (const VecnT &u) {T m = norm(u); return m==0 ? VecnT(0) : u/
 tpl std::ostream &operator<< (std::ostream &out, const VecnT &u) {out << "("; for (int i = 0; i < n; i++) out << (i==0?"":", ") << u[i]; out << ")"; return out;}
 template <typename T> Vec<3,T> cross (const Vec<3,T> &u, const Vec<3,T> &v) {Vec<3,T> w; w[0] = u[1]*v[2] - u[2]*v[1]; w[1] = u[2]*v[0] - u[0]*v[2]; w[2] = u[0]*v[1] - u[1]*v[0]; return w;}
 template <typename T> T stp (const Vec<3,T> &u, const Vec<3,T> &v, const Vec<3,T> &w) {return dot(u,cross(v,w));}
+template <typename T> bool right_handed (const Vec<3,T> &u, const Vec<3,T> &v, const Vec<3,T> &w) {return stp(u,v,w) >= 0;}
 template <int m, int n, typename T> Vec<m,T> project (const VecnT &u) {Vec<m,T> v; for (int i = 0; i < m; i++) v[i] = (i<n) ? u[i] : 0; return v;}
 template <typename T> Vec<2,T> perp (const Vec<2,T> &u) {return Vec<2,T>(-u[1],u[0]);}
+inline Vec<2> reduce_xy(const Vec<3>& v) { return Vec<2>(v[0],v[1]); }
+inline Vec<3> expand_xy(const Vec<2>& v) { return Vec<3>(v[0],v[1],0); }
+tpl void serializer_vec(gzFile fp, VecnT& v, bool save) { for(int i=0; i<3; i++) serializer(fp, v[i], save); }
+tpl inline bool is_bullshit(const VecnT& v) { for (int i=0; i<n; i++) { if (v[i] > 1e100 || v[i] < -1e100 || v[i] != v[i]) return true; } return false; }
+
+#if defined(_AVX)
+#if !defined(_WIN32)
+#include <x86intrin.h>
+#endif
+template<> inline Vec<3,double> operator+<3,double>(const Vec<3,double> &u, const Vec<3,double> &v) { __m256d r = _mm256_add_pd((__m256d&)u, (__m256d&)v); return (Vec<3,double>&)r; }
+template<> inline Vec<3,double> operator-<3,double>(const Vec<3,double> &u, const Vec<3,double> &v) { __m256d r = _mm256_sub_pd((__m256d&)u, (__m256d&)v); return (Vec<3,double>&)r; }
+template<> inline Vec<3,double> operator*<3,double>(const double &a, const Vec<3,double> &v) { __m256d r = _mm256_mul_pd(_mm256_set1_pd(a), (__m256d&)v); return (Vec<3,double>&)r; }
+template<> inline Vec<3,double> operator/<3,double>(const Vec<3,double> &u, const double &a) { __m256d r = _mm256_div_pd((__m256d&)u, _mm256_set1_pd(a)); return (Vec<3,double>&)r; }
+
+template<> inline Vec<3,double>& operator+=<3,double>(Vec<3,double> &r, const Vec<3,double> &v) { (__m256d&)r = _mm256_add_pd((__m256d&)r, (__m256d&)v); return r; }
+template<> inline Vec<3,double>& operator-=<3,double>(Vec<3,double> &r, const Vec<3,double> &v) { (__m256d&)r = _mm256_sub_pd((__m256d&)r, (__m256d&)v); return r; }
+
+// There are no base templates for these functions, we will define inline versions.
+inline Vec<3,double>& operator*=(Vec<3,double> &r, const Vec<3,double> &v)      { (__m256d&)r = _mm256_mul_pd((__m256d&)r, (__m256d&)v); return r; }
+inline Vec<3,double>& operator/=(Vec<3,double> &r, const Vec<3,double> &v)      { (__m256d&)r = _mm256_div_pd((__m256d&)r, (__m256d&)v); return r; }
+inline Vec<3,double>  operator*(const Vec<3,double> &u, const Vec<3,double> &v) { __m256d r = _mm256_mul_pd((__m256d&)u, (__m256d&)v); return (Vec<3,double>&)r; }
+inline Vec<3,double>  operator/(const Vec<3,double> &u, const Vec<3,double> &v) { __m256d r = _mm256_div_pd((__m256d&)u, (__m256d&)v); return (Vec<3,double>&)r; }
+#endif
 
 #undef tpl
 #undef VecnT
@@ -72,26 +127,28 @@ template <int m, int n, typename T=double> class MatTransposed;
 
 template <int m, int n, typename T=double> class Mat {
 private:
-	VecmT c[n];
+    VecmT c[n];
 public:
-	Mat () {for (int j = 0; j < n; j++) c[j] = VecmT(0);}
-	explicit Mat (T x) {for (int j = 0; j < n; j++) {c[j] = VecmT(0); if (j < m) c[j][j] = x;}}
-	explicit Mat (VecmT x, VecmT y) {static_assert(n==2); c[0] = x; c[1] = y;}
-	explicit Mat (VecmT x, VecmT y, VecmT z) {static_assert(n==3); c[0] = x; c[1] = y; c[2] = z;}
-	explicit Mat (VecmT x, VecmT y, VecmT z, VecmT w) {static_assert(n==4); c[0] = x; c[1] = y; c[2] = z; c[3] = w;}
-
+    Mat () {for (int j = 0; j < n; j++) c[j] = VecmT(0);}
+    explicit Mat (T x) {for (int j = 0; j < n; j++) {c[j] = VecmT(0); if (j < m) c[j][j] = x;}}
+    explicit Mat (VecmT x, VecmT y) {static_assert(n==2); c[0] = x; c[1] = y;}
+    explicit Mat (VecmT x, VecmT y, VecmT z) {static_assert(n==3); c[0] = x; c[1] = y; c[2] = z;}
+    explicit Mat (VecmT x, VecmT y, VecmT z, VecmT w) {static_assert(n==4); c[0] = x; c[1] = y; c[2] = z; c[3] = w;}
+//aa:    static Mat rows (VecnT x, VecnT y) {return Mat<n,2,T>(x,y).t();}
+//aa:    static Mat rows (VecnT x, VecnT y, VecnT z) {return Mat<n,3,T>(x,y,z).t();}
 	static Mat rows (VecnT x, VecnT y) { Mat<2,n,T> M; for(int i = 0; i < n; i++) { M.col(i)[0] = x[i]; M.col(i)[1] = y[i]; } return M; }
-	static Mat rows (VecnT x, VecnT y, VecnT z) { Mat<3,n,T> M; for(int i = 0; i < n; i++) { M.col(i)[0] = x[i]; M.col(i)[1] = y[i]; M.col(i)[2] = z[i];} return M; }
-	static Mat rows (VecnT x, VecnT y, VecnT z, VecnT w) { Mat<4,n,T> M; for(int i = 0; i < n; i++) { M.col(i)[0] = x[i]; M.col(i)[1] = y[i]; M.col(i)[2] = z[i]; M.col(i)[3] = w[i];} return M; }
-	VecnT row (int i) const {VecnT R; for(int col = 0; col < n; ++col) { R[col] = c[col][i]; } return R; }
+    static Mat rows (VecnT x, VecnT y, VecnT z) { Mat<3,n,T> M; for(int i = 0; i < n; i++) { M.col(i)[0] = x[i]; M.col(i)[1] = y[i]; M.col(i)[2] = z[i];} return M; }
+    static Mat rows (VecnT x, VecnT y, VecnT z, VecnT w) { Mat<4,n,T> M; for(int i = 0; i < n; i++) { M.col(i)[0] = x[i]; M.col(i)[1] = y[i]; M.col(i)[2] = z[i]; M.col(i)[3] = w[i];} return M; }
+    VecnT row (int i) const {VecnT R; for(int col = 0; col < n; ++col) { R[col] = c[col][i]; } return R; }
+    void set_row(int i, const VecnT& v) { for(int col = 0; col < n; ++col) c[col][i] = v[col]; }
 
-
-	T &operator() (int i, int j) {return c[j][i];}
-	const T &operator() (int i, int j) const {return c[j][i];}
-	VecmT &col (int j) {return c[j];}
-	const VecmT &col (int j) const {return c[j];}
-	MatnmT t () const {return transpose(*this);}
-	MatmnT inv () const {return inverse(*this);}
+    inline T &operator() (int i, int j) {return c[j][i];}
+    inline const T &operator() (int i, int j) const {return c[j][i];}
+    inline VecmT &col (int j) {return c[j];}
+    inline const VecmT &col (int j) const {return c[j];}
+    MatnmT t () const {return transpose(*this);}
+	// const MatTransposed<m,n,T>& t () const {return reinterpret_cast<const MatTransposed<m,n,T>&>(*this);}
+    MatmnT inv () const {return inverse(*this);}
 };
 tpl MatmnT operator+ (const MatmnT &A) {return A;}
 tpl MatmnT operator+ (const MatmnT &A, const MatmnT &B) {MatmnT C; for (int j = 0; j < n; j++) C.col(j) = A.col(j) + B.col(j); return C;}
@@ -117,7 +174,11 @@ template <typename T> T wedge (const Vec<2,T> &u, const Vec<2,T> &v) {return u[0
 template <typename T> Mat<3,3,T> inverse (const Mat<3,3,T> &A) {return Mat<3,3,T>(cross(A.col(1),A.col(2)), cross(A.col(2),A.col(0)), cross(A.col(0),A.col(1))).t()/det(A);}
 template <int n, typename T> MatnnT diag (const VecnT &u) {MatnnT A = MatnnT(0); for (int j = 0; j < n; j++) A(j,j) = u[j]; return A;}
 tpl MatmnT outer (const VecmT &u, const VecnT &v) {MatmnT A; for (int j = 0; j < n; j++) A.col(j) = u*v[j]; return A;}
+tpl T inner (const MatmnT &a, const MatmnT& b) { T r=0; for (int j=0; j<n; j++) for (int i=0; i<m; i++) r+=a.col(j)[i]*b.col(j)[i]; return r;}
 tpl std::ostream &operator<< (std::ostream &out, const MatmnT &A) {MatnmT At = transpose(A); out << "(" << std::endl; for (int i = 0; i < m; i++) out << "    " << At.col(i) << (i+1==m?"":",") << std::endl; out << ")"; return out;}
+inline Mat<2,2> reduce_xy (const Mat<3,3>& M) { return Mat<2,2> (Vec2(M(0,0),M(0,1)),Vec2(M(1,0),M(1,1))); }
+inline Mat<3,3> expand_xy (const Mat<2,2>& M) { return Mat<3,3> (Vec3(M(0,0),M(0,1),0),Vec3(M(1,0),M(1,1),0),Vec3(0,0,0)); }
+tpl MatmnT max (const MatmnT& a, const MatmnT& b) { MatmnT c; for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) c(i,j) = std::max(a(i,j), b(i,j)); return c; }
 
 // Frobenius norm
 tpl T norm2_F (const MatmnT &A) {T a = 0; for (int j = 0; j < n; j++) a += norm2(A.col(j)); return a;}
@@ -137,18 +198,22 @@ typedef Mat<3,2> Mat3x2;
 typedef Mat<2,3> Mat2x3;
 
 template <int n> struct Eig {
-	Mat<n,n> Q;
-	Vec<n> l;
+    Mat<n,n> Q;
+    Vec<n> l;
 };
 
+template <int n> Vec<n> eigen_values (const Mat<n,n>& A);
 template <int n> Eig<n> eigen_decomposition (const Mat<n,n> &A);
-template<> Eig<2> eigen_decomposition<2>(const Mat2x2 &A);
 
 template <int m, int n> struct SVD {
-	Mat<m,m> U;
-	Vec<n> s;
-	Mat<n,n> Vt;
+    Mat<m,m> U;
+    Vec<n> s;
+    Mat<n,n> Vt;
 };
+
+template <int m, int n> Vec<n> solve_llsq(const Mat<m,n> &A, const Vec<m>& b);
+template <int n> Vec<n> solve_symmetric(const Mat<n,n>& A, const Vec<n>& b);
+template <int n> Mat<n,n> get_positive (const Mat<n,n> &A);
 
 template <int m, int n> SVD<m,n> singular_value_decomposition (const Mat<m,n> &A);
 template<> SVD<3,2> singular_value_decomposition<3,2> (const Mat<3,2> &A);
@@ -164,8 +229,8 @@ template <int m, int n, typename T> class MatTransposed : protected Mat<m,n,T> {
 	template <int m1, int n1, int o, typename T1>  friend Mat<m1,o,T1> operator* (const Mat<m1,n1,T1> &A, const MatTransposed<o,n1,T1> &B);
 	template <int m1, int n1, int o, typename T1> friend Mat<m1,o,T1> operator* (const MatTransposed<n1,m1,T1> &A, const Mat<n1,o,T1> &B);
 public:
-	
-	const Mat<m,n,T>& t () const {return static_cast<const Mat<m, n, T>&>(*this);}
+    
+    const Mat<m,n,T>& t () const {return static_cast<const Mat<m, n, T>&>(*this);}
 };
 
 template <int m, int n, typename T> Vec<n, T> operator* (const MatTransposed<m,n,T> &A, const Vec<m, T> &u) 
@@ -198,6 +263,23 @@ template <int m, int n, int o, typename T> Mat<m,o,T> operator* (const MatTransp
 	return C;
 }
 
+Eig<3> eigen3(const Mat3x3 &B);
+
+
+/*
+template <int m, int n, int o, typename T> Mat<m,o,T> operator* (const MatTransposed<n,m,T> &A, const MatTransposed<o,n,T> &B) 
+{
+	Mat<m,o,T> C; 
+	for (int k = 0; k < o; k++) {
+		for(int j = 0; j < m; j++) {
+			C.col(k)[j] = 0; //!!!
+			for(int i = 0; i < n; i++)
+				C.col(k)[j] += A.col(j)[i]*B.col(i)[k];
+		}
+	}
+	return C;
+}
+*/
 #undef static_assert
 
 #endif
