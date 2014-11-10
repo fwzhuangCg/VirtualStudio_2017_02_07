@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -76,34 +76,38 @@ void subtract_rigid_acceleration (const Mesh &mesh);
 void apply_pop_filter (SimCloth &cloth, const vector<Constraint*> &cons,
                        double regularization) {
     ::mu = regularization;
+    // mark nodes active for physics
+    activate_nodes(cloth.mesh.nodes);
     // subtract_rigid_acceleration(cloth.mesh);
     // trust_region_method(PopOpt(cloth, cons), true);
     line_search_newtons_method(PopOpt(cloth, cons), OptOptions().max_iter(10));
+    
+    deactivate_nodes(cloth.mesh.nodes);
     compute_ws_data(cloth.mesh);
 }
 
 void PopOpt::initialize (double *x) const {
-    for (int n = 0; n < mesh.nodes.size(); n++)
+    for (size_t n = 0; n < mesh.nodes.size(); n++)
         set_subvec(x, n, Vec3(0));
 }
 
 void PopOpt::precompute (const double *x) const {
-    for (int n = 0; n < mesh.nodes.size(); n++) {
+    for (size_t n = 0; n < mesh.nodes.size(); n++) {
         mesh.nodes[n]->x = x0[n] + get_subvec(x, n);
         f[n] = Vec3(0);
-        for (int jj = 0; jj < J.rows[n].entries.size(); jj++)
+        for (size_t jj = 0; jj < J.rows[n].entries.size(); jj++)
             J.rows[n].entries[jj] = Mat3x3(0);
     }
-    add_internal_forces<WS>(cloth, J, f, 0);
-    add_constraint_forces(cloth, cons, J, f, 0);
+    add_internal_forces<WS>(cloth.mesh.faces, cloth.mesh.edges, J, f, 0);
+    add_constraint_forces(cons, J, f, 0);
 }
 
 double PopOpt::objective (const double *x) const {
-    for (int n = 0; n < mesh.nodes.size(); n++)
+    for (size_t n = 0; n < mesh.nodes.size(); n++)
         mesh.nodes[n]->x = x0[n] + get_subvec(x, n);
-    double e = internal_energy<WS>(cloth);
+    double e = internal_energy<WS>(cloth.mesh.faces, cloth.mesh.edges);
     e += constraint_energy(cons);
-    for (int n = 0; n < mesh.nodes.size(); n++) {
+    for (size_t n = 0; n < mesh.nodes.size(); n++) {
         const Node *node = mesh.nodes[n];
         e += node->m*dot(node->acceleration, node->x - x0[n]);
         e += ::mu*norm2(node->x - x0[n])/2.;
@@ -112,32 +116,17 @@ double PopOpt::objective (const double *x) const {
 }
 
 void PopOpt::gradient (const double *x, double *g) const {
-    for (int n = 0; n < mesh.nodes.size(); n++) {
+    for (size_t n = 0; n < mesh.nodes.size(); n++) {
         const Node *node = mesh.nodes[n];
         set_subvec(g, n, -f[n] + node->m*a0[n]
                          + ::mu*(node->x - x0[n]));
     }
 }
 
-static Mat3x3 get_submat (SpMat<double> &A, int i, int j) {
-    Mat3x3 Aij;
-    for (int ii = 0; ii < 3; ii++) for (int jj = 0; jj < 3; jj++)
-        Aij(ii,jj) = A(i*3+ii, j*3+jj);
-    return Aij;
-}
-static void set_submat (SpMat<double> &A, int i, int j, const Mat3x3 &Aij) {
-    for (int ii = 0; ii < 3; ii++) for (int jj = 0; jj < 3; jj++)
-        A(i*3+ii, j*3+jj) = Aij(ii,jj);
-}
-static void add_submat (SpMat<double> &A, int i, int j, const Mat3x3 &Aij) {
-    for (int ii = 0; ii < 3; ii++) for (int jj = 0; jj < 3; jj++)
-        A(i*3+ii, j*3+jj) += Aij(ii,jj);
-}
-
 bool PopOpt::hessian (const double *x, SpMat<double> &H) const {
-    for (int i = 0; i < mesh.nodes.size(); i++) {
+    for (size_t i = 0; i < mesh.nodes.size(); i++) {
         const SpVec<Mat3x3> &Ji = J.rows[i];
-        for (int jj = 0; jj < Ji.indices.size(); jj++) {
+        for (size_t jj = 0; jj < Ji.indices.size(); jj++) {
             int j = Ji.indices[jj];
             const Mat3x3 &Jij = Ji.entries[jj];
             set_submat(H, i, j, Jij);
@@ -148,6 +137,6 @@ bool PopOpt::hessian (const double *x, SpMat<double> &H) const {
 }
 
 void PopOpt::finalize (const double *x) const {
-    for (int n = 0; n < mesh.nodes.size(); n++)
+    for (size_t n = 0; n < mesh.nodes.size(); n++)
         mesh.nodes[n]->x = x0[n] + get_subvec(x, n);
 }
