@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -28,15 +28,10 @@
 #define NEAROBS_H
 
 #include "mesh.h"
-#include <vector>
+#include "collisionutil.h"
+#include <map>
 
-using namespace std;
-
-typedef std::pair<Vec3,Vec3> Plane;
-
-std::vector<Plane> nearest_obstacle_planes
-    (Mesh &mesh, const std::vector<Mesh*> &obs_meshes);
-
-//vector<double> nearest_dist(Mesh & mesh, const Mesh & obs_meshes);
+std::map<Node*,Plane> nearest_obstacle_planes 
+	(const std::vector<Node*> &nodes, const std::vector<AccelStruct*>& obs_accs);
 
 #endif

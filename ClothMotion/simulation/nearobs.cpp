@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -30,7 +30,7 @@
 #include "geometry.h"
 #include "magic.h"
 #include "simulation.h"
-#include <vector>
+#include <map>
 using namespace std;
 
 template <typename T> struct Min {
@@ -45,42 +45,43 @@ template <typename T> struct Min {
     }
 };
 
-struct NearPoint {
-	double d;
-	Vec3 x;
-	NearPoint (double d, const Vec3 &x): d(d), x(x) {}
-};
-
-NearPoint nearest_point (const Vec3 &x, const vector<AccelStruct*> &accs,
+Vec3 nearest_point (const Vec3 &x, const vector<AccelStruct*> &accs,
                     double dmin);
 
-vector<Plane> nearest_obstacle_planes (Mesh &mesh,
-                                       const vector<Mesh*> &obs_meshes) {
-    const double dmin = 10*::magic.repulsion_thickness;
-    vector<AccelStruct*> obs_accs = create_accel_structs(obs_meshes, false);
-    vector<Plane> planes(mesh.nodes.size(), make_pair(Vec3(0), Vec3(0)));
+map<Node*, Plane> nearest_obstacle_planes (const vector<Node*>& nodes, 
+									   const vector<AccelStruct*>& obs_accs) {
+	const double dmin = 10*::magic.repulsion_thickness;
+    vector<Plane> planes(nodes.size(), Plane(Vec3(0),Vec3(0)));
 #pragma omp parallel for
-    for (int n = 0; n < mesh.nodes.size(); n++) {
-        Vec3 x = mesh.nodes[n]->x;
-        NearPoint p = nearest_point(x, obs_accs, dmin);
-		mesh.nodes[n]->dis = p.d;
-        if (p.x != x)
-            planes[n] = make_pair(p.x, normalize(x - p.x));
+    for (size_t n = 0; n < nodes.size(); n++) {
+        Vec3 x = nodes[n]->x;
+        Vec3 p = nearest_point(x, obs_accs, dmin);
+        if (p != x)
+            planes[n].x0 = p;
+            planes[n].n = normalize(x - p);
     }
-    destroy_accel_structs(obs_accs);
-    return planes;
+    map<Node*, Plane> plane_map;
+    for (size_t i=0; i<planes.size(); i++)
+        if (norm2(planes[i].n) != 0)
+            plane_map[(Node*)nodes[i]] = planes[i];
+    return plane_map;
 }
 
+struct NearPoint {
+    double d;
+    Vec3 x;
+    NearPoint (double d, const Vec3 &x): d(d), x(x) {}
+};
 
 void update_nearest_point (const Vec3 &x, BVHNode *node, NearPoint &p);
 
-NearPoint nearest_point (const Vec3 &x, const vector<AccelStruct*> &accs,
+Vec3 nearest_point (const Vec3 &x, const vector<AccelStruct*> &accs,
                     double dmin) {
     NearPoint p(dmin, x);
-    for (int a = 0; a < accs.size(); a++)
+    for (int a = 0; a < (int)accs.size(); a++)
         if (accs[a]->root)
             update_nearest_point(x, accs[a]->root, p);
-    return p;
+    return p.x;
 }
 
 void update_nearest_point (const Vec3 &x, const Face *face, NearPoint &p);
@@ -117,19 +118,3 @@ void update_nearest_point (const Vec3 &x, const Face *face, NearPoint &p) {
               + w[3]*face->v[2]->node->x);
     }
 }
-
-//vector<double> nearest_dist(const Mesh & mesh, const Mesh & obs_meshes)
-//{
-//	vector<double> dists(mesh.nodes.size());
-//	AccelStruct * obs_accs = new AccelStruct(obs_meshes, false);
-//#pragma omp parallel for
-//	for (int n = 0; n < mesh.nodes.size(); n++) {
-//		Vec3 x = mesh.nodes[n]->x;
-//		NearPoint p(1000.f, x);
-//		if (obs_accs->root)
-//			update_nearest_point(x, obs_accs->root, p);
-//		dists[n] = p.d;
-//	}
-//	delete obs_accs;
-//	return dists;
-//}
