@@ -27,7 +27,7 @@
 #ifndef VECTORS_HPP
 #define VECTORS_HPP
 
-#include "winport.hpp" // aa: windows bindings, etc
+//#include "winport.h" // aa: windows bindings, etc
 
 #include <cmath>
 #include <iostream>

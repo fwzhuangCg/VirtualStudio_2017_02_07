@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -24,9 +24,9 @@
   UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-#include "mesh.hpp"
-#include "geometry.hpp"
-#include "util.hpp"
+#include "mesh.h"
+#include "geometry.h"
+#include "util.h"
 #include "proxy.hpp"
 #include <assert.h>
 #include <cstdlib>
@@ -198,7 +198,7 @@ void compute_ms_data (Face* face) {
     } else {
         face->invDm = Dm3.inv();
         // clamp
-        Cloth* parent = face->v[0]->node->mesh->parent;
+        SimCloth* parent = face->v[0]->node->mesh->parent;
         if (parent) {
             const double CLAMP = 1000.0/parent->remeshing.size_min;
             SVD<3,3> svd = singular_value_decomposition(face->invDm);
@@ -464,6 +464,5 @@ void delete_mesh (Mesh &mesh) {
     if (mesh.proxy)
         delete mesh.proxy;
     mesh.proxy = 0;
-}
 }
 
