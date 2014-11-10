@@ -24,22 +24,22 @@
   UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-#ifndef DYNAMICREMESH_H
-#define DYNAMICREMESH_H
+#ifndef SEPSTRENGTH_HPP
+#define SEPSTRENGTH_HPP
 
-#include <map>
-#include "simcloth.h"
-#include "nearobs.h"
+#include "mesh.h"
 
-class MeshSubset;
+struct SplitNode {
+	Node* node;
+	Vec3 normal[2];
+	double sep;
+	Face* faces[2];
 
-void static_remesh (Mesh& mesh);
+	SplitNode(Node* node) : node(node),sep(0) { faces[0] = faces[1] = NULL; normal[0] = normal[1]= Vec3(0); }
+    bool operator<(const SplitNode& o) const { return sep < o.sep; }
+};
 
-void dynamic_remesh (Mesh& mesh, const std::map<Node*,Plane> &planes);
-void dynamic_remesh (MeshSubset& subset, const std::map<Node*,Plane> &planes);
-
-Mat3x3 compute_face_sizing (Remeshing& remeshing, const Face *face, 
-                            const std::map<Node*,Plane> &planes, bool debug = false);
-
+Mat3x3 compute_sigma(const Face* face);
+double separation_strength(Node* node, SplitNode* split, bool always_compute);
 
 #endif

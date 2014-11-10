@@ -24,22 +24,33 @@
   UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-#ifndef DYNAMICREMESH_H
-#define DYNAMICREMESH_H
+#ifndef SUBSET_HPP
+#define SUBSET_HPP
 
+#include "mesh.h"
+#include "util.h"
 #include <map>
-#include "simcloth.h"
-#include "nearobs.h"
 
-class MeshSubset;
+class MeshSubset {
+public:
+	std::vector<Node*> active_nodes;
+	std::vector<Node*> support_nodes;
+	
+	std::vector<Face*> get_faces();
+	std::vector<Vert*> get_verts();
+	std::vector<Edge*> get_edges();
+    std::vector<Node*> get_all_nodes();
 
-void static_remesh (Mesh& mesh);
+	void grow(int rings);
+	void rebuild_faces();
+    void update_support();
+    void set_flag(int flag);
+    void clear_flag(int flag);
+    
+	void debug();
 
-void dynamic_remesh (Mesh& mesh, const std::map<Node*,Plane> &planes);
-void dynamic_remesh (MeshSubset& subset, const std::map<Node*,Plane> &planes);
-
-Mat3x3 compute_face_sizing (Remeshing& remeshing, const Face *face, 
-                            const std::map<Node*,Plane> &planes, bool debug = false);
-
+private:
+    void recompute_support(std::map<Node*,int>& acc);    
+};
 
 #endif
