@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -24,60 +24,11 @@
   UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-#ifndef SIMULATION_H
-#define SIMULATION_H
+#ifndef BREAKING_HPP
+#define BREAKING_HPP
 
-#include "simcloth.h"
-#include "constraint.h"
-#include "handle.h"
-#include "morph.h"
-#include "obstacle.h"
-#include "spline.h"
-#include "../timer.h"
-#include <string>
-#include <vector>
-#include <memory>
+#include "mesh.h"
 
-typedef std::tr1::shared_ptr<SimCloth> SmtClothPtr;
-
-struct Wind {
-    double density;
-    Vec3 velocity;
-    double drag;
-};
-
-struct Simulation {
-    // variables
-    double time;
-    int frame, step;
-    std::vector<SmtClothPtr> cloths;
-    // constants
-    int frame_steps, save_every;
-    double frame_time, step_time;
-    double end_time, end_frame;
-    double passive_time;
-    std::vector<Motion> motions;
-    std::vector<Handle*> handles;
-    std::vector<Obstacle> obstacles;
-    std::vector<Morph> morphs;
-    Vec3 gravity;
-    Wind wind;
-    double friction, obs_friction;
-    enum {Proximity, Physics, StrainLimiting, Collision, Remeshing, Separation,
-          PopFilter, Plasticity, Fracture, nModules};
-    bool enabled[nModules];
-    Timer timers[nModules];
-    // handy pointers
-    std::vector<Mesh*> cloth_meshes, obstacle_meshes;
-};
-extern Simulation sim;
-
-void prepare (Simulation &sim);
-
-bool relax_initial_state (Simulation &sim);
-
-void advance_frame (Simulation &sim);
-
-bool advance_step (Simulation &sim);
+void perform_breaking(Mesh& mesh);
 
 #endif
