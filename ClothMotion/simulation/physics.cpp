@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -81,10 +81,10 @@ Mat3x3 deformation_gradient (const Face *face) {
 }
 
 Mat3x3 material_model (const Face *face, const Mat3x3& G) {
-    const Material* mat = face->material;
+    const SimMaterial* mat = face->material;
     double weakening_mult = 1/(1 + mat->weakening * face->damage);
     if (mat->use_dde) {
-        Vec4 k = stretching_stiffness(reduce_xy(G), mat->dde_stretching) * weakening_mult;
+        Vec4 k = stretching_stiffness(reduce_xy(G), mat->stretching) * weakening_mult;
         Mat3x3 sigma (Vec3(k[0]*G(0,0)+k[1]*G(1,1), 0.5*k[3]*G(0,1), 0),
                       Vec3(0.5*k[3]*G(1,0), k[2]*G(1,1)+k[1]*G(0,0), 0),
                       Vec3(0, 0, 0));
@@ -107,7 +107,7 @@ double stretching_energy (const Face *face) {
 
 template <Space s>
 pair<Mat9x9,Vec9> stretching_force (const Face *face) {
-    const Material* mat = face->material;
+    const SimMaterial* mat = face->material;
     // compute stress, strain
     const Vec3 x[3] = { pos<s>(face->v[0]->node), pos<s>(face->v[1]->node), pos<s>(face->v[2]->node) };
     Mat3x3 F = deformation_gradient<s>(face);
@@ -126,7 +126,7 @@ pair<Mat9x9,Vec9> stretching_force (const Face *face) {
     Vec9 grad_f(0);
     Mat9x9 hess_f(0);
     if (mat->use_dde) {
-        Vec4 k = stretching_stiffness(reduce_xy(G), mat->dde_stretching) * weakening_mult;
+        Vec4 k = stretching_stiffness(reduce_xy(G), mat->stretching) * weakening_mult;
 
         const Mat<3,9>& Du = DD[0];
         const Mat<3,9>& Dv = DD[1];
@@ -177,9 +177,9 @@ double bending_coeff(const Edge* edge, double theta) {
     double l = norm(edge->n[1]->x - edge->n[0]->x);
     
     double ke0 = (face0->material->use_dde) ? 
-    	bending_stiffness(edge, 0, face0->material->dde_bending, l, theta) : face0->material->alt_bending;
+    	bending_stiffness(edge, 0, face0->material->bending, l, theta) : face0->material->alt_bending;
     double ke1 = (face1->material->use_dde) ? 
-    	bending_stiffness(edge, 1, face1->material->dde_bending, l, theta) : face1->material->alt_bending;
+    	bending_stiffness(edge, 1, face1->material->bending, l, theta) : face1->material->alt_bending;
     
     double ke = min(ke0, ke1);
     double weakening = max(face0->material->weakening, face1->material->weakening);
@@ -473,7 +473,7 @@ void add_external_forces (const vector<Node*>& nodes, const vector<Face*>& faces
     }
 }
 
-void add_morph_forces (const Cloth &cloth, const Morph &morph, double t,
+void add_morph_forces (const SimCloth &cloth, const Morph &morph, double t,
                        double dt, vector<Vec3> &fext, vector<Mat3x3> &Jext) {
     const Mesh &mesh = cloth.mesh;
     for (int v = 0; v < (int)mesh.verts.size(); v++) {
