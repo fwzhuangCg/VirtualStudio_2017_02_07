@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -33,7 +33,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdarg>
+#include <zlib.h>
+#include <map>
+#include <vector>
 
 #define EPSILON		1e-7f
 #define M_PI       3.14159265358979323846
@@ -57,25 +59,14 @@ struct Stats {
     Stats (): sum(0) {}
     void add (double x);
     void sort () const;
-    double min () const;
-	double max () const;
-	double mean () const;
-	double median () const;
-    double quantile (double) const;
+    double min () const, max () const, mean () const, median () const,
+        quantile (double) const;
 };
 std::ostream &operator<< (std::ostream &out, const Stats &stats);
 
 // sprintf for std::strings
 
-//std::string stringff (const std::string &format, ...);
-inline std::string stringff (const std::string &format, ...) {
-	char buf[256];
-	va_list args;
-	va_start(args, format);
-	vsnprintf(buf, 256, format.c_str(), args);
-	va_end(args);
-	return std::string(buf);
-}
+std::string stringf (const std::string &format, ...);
 
 // Easy reporting of vertices and faces
 
@@ -87,6 +78,8 @@ std::ostream &operator<< (std::ostream &out, const Face *face);
 // Math utilities
 
 extern const double infinity;
+
+template <typename T> T sqr (const T& x) { return x*x; }
 
 template <typename T> T clamp (const T &x, const T &a, const T &b) {
     return std::min(std::max(x, a), b); }
@@ -102,6 +95,8 @@ template <typename T> T max (const T &a, const T &b, const T &c, const T &d) {
     return std::max(std::max(a,b),std::max(c,d));}
 
 template <typename T> T sgn (const T &x) {return x<0 ? -1 : 1;}
+
+inline bool is_finite(double x) { return x > -1e300 && x < 1e300; }
 
 int solve_quadratic (double a, double b, double c, double x[2]);
 
@@ -182,9 +177,13 @@ bool is_seam_or_boundary (const Vert *v);
 bool is_seam_or_boundary (const Node *n);
 bool is_seam_or_boundary (const Edge *e);
 bool is_seam_or_boundary (const Face *f);
+bool is_seam (const Edge* e);
+
+void build_node_lookup(std::map<const Node*,Vec3>& nodemap, const std::vector<Mesh*>& meshes);
 
 // Debugging
 
+void segfault();
 void debug_save_mesh (const Mesh &mesh, const std::string &name, int n=-1);
 void debug_save_meshes (const std::vector<Mesh*> &meshes,
                         const std::string &name, int n=-1);
@@ -203,5 +202,30 @@ std::ostream &operator<< (std::ostream &out, const std::vector<T> &v) {
 #define REPORT(x) std::cout << #x << " = " << (x) << std::endl
 
 #define REPORT_ARRAY(x,n) std::cout << #x << "[" << #n << "] = " << vector<double>(&(x)[0], &(x)[n]) << std::endl
+
+// Serialization
+
+struct Serialize {
+	enum Mode { Load = 0, Save, Check };
+	
+	gzFile fp;
+	int version;
+	Mode mode;
+
+	bool load() { return mode == Load; }
+	bool save() { return mode == Save; }
+	bool check() { return mode == Check; }	
+};
+
+template<class T>
+void serializer(T& v, Serialize& s, const std::string& name = "<>");
+
+template<class T> 
+void serializer_array(std::vector<T>& v, Serialize& s, const std::string& name) { 
+	int idx = v.size();	
+	serializer(idx, s, name + " #num");
+	if (s.load())
+		v.resize(idx);
+}
 
 #endif

@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -27,9 +27,12 @@
 #include "util.h"
 #include "mesh.h"
 #include <algorithm>
+#include <cstdarg>
+#include <cstdio>
 #include <iomanip>
 #include <limits>
 #include <map>
+#include <signal.h>
 #include <sstream>
 #include <cstdio>
 
@@ -64,7 +67,14 @@ ostream &operator<< (ostream &out, const Stats &stats) {
     return out;
 }
 
-
+inline string stringf (const string &format, ...) {
+    char buf[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buf, 256, format.c_str(), args);
+    va_end(args);
+    return std::string(buf);
+}
 
 template <typename T> string name (const T *p) {
     stringstream ss;
@@ -73,18 +83,37 @@ template <typename T> string name (const T *p) {
 }
 
 ostream &operator<< (ostream &out, const Vert *vert) {
-    out << "v:" << name(vert); return out;}
+	if (!vert)
+		out << "v:none";
+    else
+    	out << "v:" << name(vert); 
+    return out;
+}
 
 ostream &operator<< (ostream &out, const Node *node) {
-    out << "n:" << name(node) << node->verts; return out;}
+	if (!node)
+		out << "n:none";
+	else
+    	out << "n:" << name(node) << node->verts; 
+    return out;
+}
 
 ostream &operator<< (ostream &out, const Edge *edge) {
-    out << "e:" << name(edge) << "(" << edge->n[0] << "-" << edge->n[1] << ")"; return out;}
+    if (!edge)
+    	out << "e:none";
+    else 
+    	out << "e:" << name(edge) << "(" << edge->n[0] << "-" << edge->n[1] << ")"; 
+    return out;
+}
 
 ostream &operator<< (ostream &out, const Face *face) {
-    out << "f:" << name(face) << "(" << face->v[0] << "-" << face->v[1] << "-" << face->v[2] << ")"; return out;}
+	if (!face)
+		out << "f:none";
+	else
+    	out << "f:" << name(face) << "(" << face->v[0] << "-" << face->v[1] << "-" << face->v[2] << ")"; return out;
+}
 
-const double infinity = /*numeric_limits<double>::infinity()*/10000000.f;
+const double infinity = numeric_limits<double>::infinity();
 
 int solve_quadratic (double a, double b, double c, double x[2]) {
     // http://en.wikipedia.org/wiki/Quadratic_formula#Floating_point_implementation
@@ -109,14 +138,16 @@ bool is_seam_or_boundary (const Vert *v) {
 }
 
 bool is_seam_or_boundary (const Node *n) {
-    for (int e = 0; e < n->adje.size(); e++)
+    for (int e = 0; e < (int)n->adje.size(); e++)
         if (is_seam_or_boundary(n->adje[e]))
             return true;
     return false;
 }
 
 bool is_seam_or_boundary (const Edge *e) {
-    return !e->adjf[0] || !e->adjf[1] || edge_vert(e,0,0) != edge_vert(e,1,0);
+    return !e->adjf[0] || !e->adjf[1]
+        || edge_vert(e,0,0) != edge_vert(e,1,0)
+        || edge_vert(e,0,1) != edge_vert(e,1,1);
 }
 
 bool is_seam_or_boundary (const Face *f) {
@@ -125,22 +156,19 @@ bool is_seam_or_boundary (const Face *f) {
         || is_seam_or_boundary(f->adje[2]);
 }
 
-void debug_save_meshes (const vector<Mesh*> &meshvec, const string &name, int n) {
-	/*static map<string,int> savecount;
-	if (n == -1)
-	n = savecount[name];
-	else
-	savecount[name] = n;
-	save_objs(meshvec, stringf("tmp/%s%04d", name.c_str(), n));
-	savecount[name]++;*/
+bool is_seam (const Edge* e) {
+	return e->adjf[0] && e->adjf[1]
+        && (edge_vert(e,0,0) != edge_vert(e,1,0)
+            || edge_vert(e,0,1) != edge_vert(e,1,1));
 }
 
-void debug_save_mesh (const Mesh &mesh, const string &name, int n) {
-	/*static map<string,int> savecount;
-	if (n == -1)
-	n = savecount[name];
-	else
-	savecount[name] = n;
-	save_obj(mesh, stringf("tmp/%s%04d.obj", name.c_str(), n));
-	savecount[name]++;*/
+void build_node_lookup(map<const Node*,Vec3>& nodemap, const vector<Mesh*>& meshes) {
+	for (size_t i=0; i<meshes.size(); i++)
+    	for (size_t j=0; j<meshes[i]->nodes.size(); j++)
+    		nodemap[meshes[i]->nodes[j]] = meshes[i]->nodes[j]->x;    
+}
+
+
+void segfault() {
+	raise(SIGSEGV);
 }

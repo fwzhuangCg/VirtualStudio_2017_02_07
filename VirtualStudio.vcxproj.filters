@@ -206,9 +206,6 @@
     <ClCompile Include="ClothMotion\simulation\auglag.cpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClCompile>
-    <ClCompile Include="ClothMotion\simulation\bah.cpp">
-      <Filter>ClothMotion\simulation</Filter>
-    </ClCompile>
     <ClCompile Include="ClothMotion\simulation\bvh.cpp">
       <Filter>ClothMotion\simulation</Filter>
     </ClCompile>
@@ -413,9 +410,6 @@
       <Filter>ClothMotion\alglib</Filter>
     </ClInclude>
     <ClInclude Include="ClothMotion\simulation\auglag.h">
-      <Filter>ClothMotion\simulation</Filter>
-    </ClInclude>
-    <ClInclude Include="ClothMotion\simulation\bah.h">
       <Filter>ClothMotion\simulation</Filter>
     </ClInclude>
     <ClInclude Include="ClothMotion\simulation\blockvectors.hpp">

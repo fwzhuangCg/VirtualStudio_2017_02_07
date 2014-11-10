@@ -289,7 +289,6 @@
     <ClCompile Include="ClothMotion\alglib\statistics.cpp" />
     <ClCompile Include="ClothMotion\cloth_motion.cpp" />
     <ClCompile Include="ClothMotion\simulation\auglag.cpp" />
-    <ClCompile Include="ClothMotion\simulation\bah.cpp" />
     <ClCompile Include="ClothMotion\simulation\bvh.cpp" />
     <ClCompile Include="ClothMotion\simulation\proxy.cpp" />
     <ClCompile Include="ClothMotion\simulation\simcloth.cpp" />
@@ -432,7 +431,6 @@
     <ClInclude Include="ClothMotion\alglib\stdafx.h" />
     <ClInclude Include="ClothMotion\cloth_motion.h" />
     <ClInclude Include="ClothMotion\simulation\auglag.h" />
-    <ClInclude Include="ClothMotion\simulation\bah.h" />
     <ClInclude Include="ClothMotion\simulation\blockvectors.hpp" />
     <ClInclude Include="ClothMotion\simulation\bvh.h" />
     <ClInclude Include="ClothMotion\simulation\proxy.hpp" />
