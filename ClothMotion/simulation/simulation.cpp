@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -66,15 +66,15 @@ void remeshing_step (Simulation &sim, bool initializing=false);
 void validate_handles (const Simulation &sim);
 
 static void consistency(const char* text) {
-	if (consistency_check) {
+	/*if (consistency_check) {
 		cout << "> " << text << " ";
 		test_state(sim, "/tmp/c");
-	}
+	}*/
 }
 
 void prepare (Simulation &sim) {
 	for (size_t c = 0; c < sim.cloths.size(); c++) {
-		Cloth& cloth = sim.cloths[c];
+		SimCloth& cloth = sim.cloths[c];
 	    cloth.mesh.parent = &sim.cloths[c];
 	    for (size_t i=0; i<cloth.mesh.faces.size(); i++)
             cloth.mesh.faces[i]->material = cloth.materials[cloth.mesh.faces[i]->flag];
@@ -136,7 +136,7 @@ vector<Constraint*> get_constraints (Simulation &sim, bool include_proximity);
 void delete_constraints (const vector<Constraint*> &cons);
 void update_obstacles (Simulation &sim, bool update_positions=true);
 
-void advance_step (Simulation &sim);
+bool advance_step (Simulation &sim);
 void add_jitter (Simulation &sim);
 
 void advance_frame (Simulation &sim) {
@@ -157,7 +157,7 @@ bool advance_step (Simulation &sim) {
         sim.step_time *= 5;
         magic.collision_stiffness *= 0.4;
     }
-    Annotation::list.clear();
+   // Annotation::list.clear();
     update_obstacles(sim, false);
     vector<Constraint*> cons = get_constraints(sim, true);
     consistency("init step");

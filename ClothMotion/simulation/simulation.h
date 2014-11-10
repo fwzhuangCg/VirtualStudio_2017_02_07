@@ -36,9 +36,6 @@
 #include "../timer.h"
 #include <string>
 #include <vector>
-#include <memory>
-
-typedef std::tr1::shared_ptr<SimCloth> SmtClothPtr;
 
 struct Wind {
     double density;
@@ -50,7 +47,7 @@ struct Simulation {
     // variables
     double time;
     int frame, step;
-    std::vector<SmtClothPtr> cloths;
+    std::vector<SimCloth> cloths;
     // constants
     int frame_steps, save_every;
     double frame_time, step_time;
