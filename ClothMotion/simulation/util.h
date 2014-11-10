@@ -33,7 +33,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <zlib.h>
+//#include <zlib.h>
 #include <map>
 #include <vector>
 
@@ -205,27 +205,27 @@ std::ostream &operator<< (std::ostream &out, const std::vector<T> &v) {
 
 // Serialization
 
-struct Serialize {
-	enum Mode { Load = 0, Save, Check };
-	
-	gzFile fp;
-	int version;
-	Mode mode;
+//struct Serialize {
+//	enum Mode { Load = 0, Save, Check };
+//	
+//	//gzFile fp;
+//	int version;
+//	Mode mode;
+//
+//	bool load() { return mode == Load; }
+//	bool save() { return mode == Save; }
+//	bool check() { return mode == Check; }	
+//};
 
-	bool load() { return mode == Load; }
-	bool save() { return mode == Save; }
-	bool check() { return mode == Check; }	
-};
-
-template<class T>
-void serializer(T& v, Serialize& s, const std::string& name = "<>");
-
-template<class T> 
-void serializer_array(std::vector<T>& v, Serialize& s, const std::string& name) { 
-	int idx = v.size();	
-	serializer(idx, s, name + " #num");
-	if (s.load())
-		v.resize(idx);
-}
+//template<class T>
+//void serializer(T& v, Serialize& s, const std::string& name = "<>");
+//
+//template<class T> 
+//void serializer_array(std::vector<T>& v, Serialize& s, const std::string& name) { 
+//	int idx = v.size();	
+//	serializer(idx, s, name + " #num");
+//	if (s.load())
+//		v.resize(idx);
+//}
 
 #endif

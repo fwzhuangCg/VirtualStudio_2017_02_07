@@ -35,12 +35,12 @@ void ClothHandler::init_avatars_to_handler(
 			x[0] = position[index * 9 + nindex * 3 ];
 			x[1] = position[index * 9 + nindex * 3 + 1];
 			x[2] = position[index * 9 + nindex * 3 + 2];
-			obs.base_mesh.add(new Node(x, Vec3(0)));
+			obs.base_mesh.add(new Node(x, x, Vec3(0), 0, 0, false));
 
 			Vec2 u;
 			u[0] = texcoords[index * 6 + nindex * 2];
 			u[0] = texcoords[index * 6 + nindex * 2 + 1];
-			obs.base_mesh.add(new Vert(u));
+			obs.base_mesh.add(new Vert(expand_xy(u)));
 		}	
 	}
 
@@ -55,7 +55,7 @@ void ClothHandler::init_avatars_to_handler(
 		}
 
 		for (int v = 0; v < verts.size(); v++)
-			connectvn(verts[v], nodes[v]);
+			connect(verts[v], nodes[v]);
 		std::vector<Face*> faces = triangulate(verts);
 		for (int f = 0; f < faces.size(); f++)
 			obs.base_mesh.add(faces[f]);

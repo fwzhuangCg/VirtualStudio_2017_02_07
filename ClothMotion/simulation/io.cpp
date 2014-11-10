@@ -263,7 +263,7 @@ void load_obj (Mesh &mesh, const string &filename) {
 
 void load_objs (vector<Mesh*> &meshes, const string &prefix) {
 	for (int m = 0; m < meshes.size(); m++)
-		load_obj(*meshes[m], stringff("%s_%02d.obj", prefix.c_str(), m));
+		load_obj(*meshes[m], stringf("%s_%02d.obj", prefix.c_str(), m));
 }
 
 static double angle (const Vec3 &x0, const Vec3 &x1, const Vec3 &x2) {
@@ -357,7 +357,7 @@ void save_obj (const Mesh &mesh, const string &filename) {
 
 void save_objs (const vector<Mesh*> &meshes, const string &prefix) {
 	for (int m = 0; m < meshes.size(); m++)
-		save_obj(*meshes[m], stringff("%s_%02d.obj", prefix.c_str(), m));
+		save_obj(*meshes[m], stringf("%s_%02d.obj", prefix.c_str(), m));
 }
 
 void save_transformation (const Transformation &tr, const string &filename) {

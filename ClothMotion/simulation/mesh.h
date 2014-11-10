@@ -102,7 +102,7 @@ struct Node {
 
     inline bool active() const { return flag & FlagActive; }
 
-    void serializer(Serialize& s);
+    //void serializer(Serialize& s);
 };
 
 struct Edge {
@@ -124,7 +124,7 @@ struct Edge {
 
 struct Face {
     Vert* v[3]; // verts
-    Material* material;
+    SimMaterial* material;
     int flag;
     // topological data
     Edge *adje[3]; // adjacent edges
@@ -144,7 +144,7 @@ struct Face {
     	for (int i=0; i<3; i++) { v[i]=0; adje[i]=0; } 
     }
     explicit Face (Vert *vert0, Vert *vert1, Vert *vert2, const Mat3x3& ps, 
-    	const Mat3x3& pb, Material* mat, double damage):
+    	const Mat3x3& pb, SimMaterial* mat, double damage):
         material(mat), flag(0), a(0), m(0), Sp_bend(pb), Sp_str(ps), sigma(0), damage(damage) {
         v[0] = vert0;
         v[1] = vert1;
@@ -154,7 +154,7 @@ struct Face {
 
 struct Mesh {
 	ReferenceShape *ref;
-	Cloth* parent;
+	SimCloth* parent;
     CollisionProxy* proxy;
 
     std::vector<Vert*> verts;

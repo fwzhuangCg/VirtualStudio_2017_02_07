@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -24,8 +24,8 @@
   UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 */
 
-#ifndef GEOMETRY_H
-#define GEOMETRY_H
+#ifndef GEOMETRY_HPP
+#define GEOMETRY_HPP
 
 #include "mesh.h"
 #include "util.h"
@@ -46,19 +46,54 @@ double unsigned_ee_distance (const Vec3 &x0, const Vec3 &x1,
                              const Vec3 &y0, const Vec3 &y1,
                              Vec3 *n, double *w);
 
+double signed_ve_distance (const Vec3 &x,const Vec3 &y0, const Vec3 &y1,
+                           Vec3* n, double *w);
+
 Vec3 get_barycentric_coords (const Vec2 &point, const Face *face);
 
 Face* get_enclosing_face (const Mesh& mesh, const Vec2& u,
                           Face *starting_face_hint = NULL);
 
-enum Space {PS, WS}; // plastic space, world space
+enum Space {MS, PS, WS}; // material space, plastic space, world space
 
 template <Space s> const Vec3 &pos (const Node *node);
-template <Space s> Vec3 &pos (Node *node);
-template <Space s> Vec3 nor (const Face *face);
+template <Space s> inline Vec3 &pos (Node *node);
+template <Space s> const Vec3 &pos (const Vert *vert);
+template <Space s> inline Vec3 &pos (Vert *vert);
+template <Space s> Vec3 normal (const Face *face);
+template <Space s> Vec3 normal (const Node* node);
 template <Space s> double dihedral_angle (const Edge *edge);
-template <Space s> Mat2x2 curvature (const Face *face);
+double dihedral_angle (const Vec3& p0, const Vec3& p1, const Vec3& n0, const Vec3& n1);
+template <Space s> Mat3x3 curvature (const Face *face);
+template <Space s> Mat2x2 projected_curvature (const Face *face, const Mat2x3& base);
 
-double unwrap_angle (double theta, double theta_ref);
+inline double area (const Vec3& u0, const Vec3& u1, const Vec3& u2) { return 0.5*norm(cross(u1-u0,u2-u0)); }
+inline double area (const Face* face) { return area(face->v[0]->u, face->v[1]->u, face->v[2]->u); }
+double aspect (const Vec3& u0, const Vec3& u1, const Vec3& u2);
+inline double aspect (const Face* face) { return aspect(face->v[0]->u, face->v[1]->u, face->v[2]->u); }
+double get_angle(const Vec3& u, const Vec3& v);
+
+template <Space s> Plane plane_fit (const Mesh& mesh);
+
+Mat3x3 local_base(const Vec3& normal);
+
+bool triangle_ray_test (const Vec3 &x0, const Vec3& x1, const Vec3& x2,
+                        const Vec3 &s, const Vec3& d, double& z, Vec3* bary=0);
+
+// -----------------------------------------------------------------------------
+// IMPLEMENTATION
+//
+
+template <> inline const Vec3 &pos<PS> (const Node *node) {return node->y;}
+template <> inline const Vec3 &pos<WS> (const Node *node) {return node->x;}
+template <> inline Vec3 &pos<PS> (Node *node) {return node->y;}
+template <> inline Vec3 &pos<WS> (Node *node) {return node->x;}
+template <> inline const Vec3 &pos<MS> (const Vert *vert) {return vert->u;}
+template <> inline const Vec3 &pos<PS> (const Vert *vert) {return vert->node->y;}
+template <> inline const Vec3 &pos<WS> (const Vert *vert) {return vert->node->x;}
+template <> inline Vec3 &pos<MS> (Vert *vert) {return vert->u;}
+template <> inline Vec3 &pos<PS> (Vert *vert) {return vert->node->y;}
+template <> inline Vec3 &pos<WS> (Vert *vert) {return vert->node->x;}
+
 
 #endif

@@ -133,7 +133,7 @@ double bending_stiffness (const Edge *edge, int side,
     if(value_i<0)   value_i=0;
     if(value_i>3)   value_i=3;
     value-=value_i;
-    Vec2 du = edge_vert(edge, side, 1)->u - edge_vert(edge, side, 0)->u;
+    Vec3 du = edge_vert(edge, side, 1)->u - edge_vert(edge, side, 0)->u;
     double    bias_angle=(atan2f(du[1], du[0])+initial_angle)*4/M_PI;
     if(bias_angle<0)        bias_angle= -bias_angle;
     if(bias_angle>4)        bias_angle=8-bias_angle;

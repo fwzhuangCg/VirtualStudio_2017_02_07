@@ -87,7 +87,7 @@ template <int m, int n, typename T> Vec<m,T> project (const VecnT &u) {Vec<m,T> 
 template <typename T> Vec<2,T> perp (const Vec<2,T> &u) {return Vec<2,T>(-u[1],u[0]);}
 inline Vec<2> reduce_xy(const Vec<3>& v) { return Vec<2>(v[0],v[1]); }
 inline Vec<3> expand_xy(const Vec<2>& v) { return Vec<3>(v[0],v[1],0); }
-tpl void serializer_vec(gzFile fp, VecnT& v, bool save) { for(int i=0; i<3; i++) serializer(fp, v[i], save); }
+//tpl void serializer_vec(gzFile fp, VecnT& v, bool save) { for(int i=0; i<3; i++) serializer(fp, v[i], save); }
 tpl inline bool is_bullshit(const VecnT& v) { for (int i=0; i<n; i++) { if (v[i] > 1e100 || v[i] < -1e100 || v[i] != v[i]) return true; } return false; }
 
 #if defined(_AVX)

@@ -104,7 +104,7 @@ std::ostream &operator<< (std::ostream &out, const SpMat<T> &A) {
 
 inline void debug_save_spmat (const SpMat<double> &A) {
     static int n = 0;
-    std::fstream file(stringff("tmp/spmat%d", n++).c_str(), std::ios::out);
+    std::fstream file(stringf("tmp/spmat%d", n++).c_str(), std::ios::out);
     file << "SparseArray[{";
     for (int i = 0; i < A.m; i++) {
         const SpVec<double> &row = A.rows[i];
