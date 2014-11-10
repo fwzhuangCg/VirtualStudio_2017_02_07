@@ -40,7 +40,7 @@ public:
 
 	// Temporary used to import obj cloth file
 	void add_clothes_to_handler(const char * filename);
-	void add_clothes_to_handler(SmtClothPtr cloth) {clothes_.push_back(cloth);}
+	void add_clothes_to_handler(SimCloth * cloth) {clothes_.push_back(*cloth);}
 	void update_buffer();
 	std::vector<float> get_position() { return position_buffer_; }
 	std::vector<float> get_normal() { return normal_buffer_; }
@@ -70,7 +70,7 @@ private:
 	std::tr1::shared_ptr<Simulation> sim_;
 	int frame_;
 	std::tr1::shared_ptr<Timer> fps_;
-	std::vector<SmtClothPtr> & clothes_;
+	std::vector<SimCloth> & clothes_;
 	std::vector<std::vector<SmtClothPtr > > clothes_frame_;
 	std::vector<float> position_buffer_;
 	std::vector<float> normal_buffer_;

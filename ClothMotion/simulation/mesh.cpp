@@ -28,6 +28,7 @@
 #include "geometry.h"
 #include "util.h"
 #include "proxy.hpp"
+#include "simcloth.h"
 #include <assert.h>
 #include <cstdlib>
 using namespace std;

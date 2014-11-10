@@ -26,7 +26,7 @@
 
 #include "remesh.h"
 
-#include "blockvectors.h"
+#include "blockvectors.hpp"
 #include "geometry.h"
 #include "io.h"
 #include "localopt.hpp"
@@ -35,6 +35,7 @@
 #include "proximity.h"
 #include "referenceshape.hpp"
 #include "util.h"
+#include "simulation.h"
 
 #include <assert.h>
 #include <cstdlib>
