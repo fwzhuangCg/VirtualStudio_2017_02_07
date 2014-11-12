@@ -283,7 +283,7 @@ void ClothHandler::init_simulation()
 	fs >> label >> magic.collision_stiffness;
 
 	// functional ability
-	bool has_strain_limits = false, has_plasticity = false;
+	bool has_strain_limits = false, has_plasticity = false, has_fracture = false;
 	for (int c = 0; c < sim_->cloths.size(); c++)
 	{
 		for (int m = 0; m < sim_->cloths[c].materials.size(); m++) 
@@ -293,6 +293,8 @@ void ClothHandler::init_simulation()
 				has_strain_limits = true;
 			if (mat->yield_curv != infinity)
 				has_plasticity = true;
+			if (mat->toughness > 0)
+            	has_fracture = true;
 		}
 	}
 	sim_->enabled[Simulation::Proximity] = true;
@@ -305,6 +307,8 @@ void ClothHandler::init_simulation()
 		sim_->enabled[Simulation::StrainLimiting] = false;
 	if (!has_plasticity)
 		sim_->enabled[Simulation::Plasticity] = false;
+	if (!has_fracture)
+    	sim.enabled[Simulation::Fracture] = false;
 
 	fs.close();
 }
