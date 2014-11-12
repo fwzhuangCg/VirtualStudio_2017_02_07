@@ -73,9 +73,6 @@ void build_face_normal_lookup(map<const Face*,Vec3>& nmap, const vector<Mesh*>& 
 
 bool separate_obstacles (vector<Mesh*> &obs_meshes,
                          const vector<Mesh*> &meshes) {
-    
-	/*::meshes = &meshes;
-	::obs_meshes = &obs_meshes;*/
 
     SO::xold.clear();
     SO::nold.clear();

@@ -76,8 +76,8 @@ static void consistency(const char* text) {
 
 void prepare (Simulation &sim) {
 	for (size_t c = 0; c < sim.cloths.size(); c++) {
-		SimCloth& cloth = sim.cloths[c];
-	    cloth.mesh.parent = &sim.cloths[c];
+		SimCloth& cloth = *sim.cloths[c];
+	    cloth.mesh.parent = sim.cloths[c];
 	    for (size_t i=0; i<cloth.mesh.faces.size(); i++)
             cloth.mesh.faces[i]->material = cloth.materials[cloth.mesh.faces[i]->flag];
         for (size_t i=0; i<cloth.mesh.edges.size(); i++)
@@ -86,7 +86,7 @@ void prepare (Simulation &sim) {
 	}
     sim.cloth_meshes.resize(sim.cloths.size());
     for (size_t c = 0; c < sim.cloths.size(); c++) {
-        sim.cloth_meshes[c] = &sim.cloths[c].mesh;
+        sim.cloth_meshes[c] = &sim.cloths[c]->mesh;
         update_x0(*sim.cloth_meshes[c]);
     }
     sim.obstacle_meshes.resize(sim.obstacles.size());
@@ -100,7 +100,7 @@ bool relax_initial_state (Simulation &sim) {
 	validate_handles(sim);
     if (::magic.preserve_creases)
         for (int c = 0; c < (int)sim.cloths.size(); c++)
-            reset_plasticity(sim.cloths[c]);
+            reset_plasticity(*sim.cloths[c]);
     
     bool equilibrate = true;
     if (equilibrate) {
@@ -115,7 +115,7 @@ bool relax_initial_state (Simulation &sim) {
     }
     if (::magic.preserve_creases)
         for (int c = 0; c < (int)sim.cloths.size(); c++)
-            reset_plasticity(sim.cloths[c]);
+            reset_plasticity(*sim.cloths[c]);
     ::magic.preserve_creases = false;
     if (::magic.fixed_high_res_mesh)
         sim.enabled[remeshing] = false;
@@ -214,7 +214,7 @@ void physics_step (Simulation &sim, const vector<Constraint*> &cons) {
         return;
     sim.timers[physics].tick();
     for (size_t c = 0; c < sim.cloths.size(); c++) {
-    	Mesh& mesh = sim.cloths[c].mesh;
+    	Mesh& mesh = sim.cloths[c]->mesh;
         int nn = mesh.nodes.size();
         vector<Vec3> fext(nn, Vec3(0));
         vector<Mat3x3> Jext(nn, Mat3x3(0));
@@ -225,8 +225,8 @@ void physics_step (Simulation &sim, const vector<Constraint*> &cons) {
             sim.handles[h]->add_forces(sim.time,fext,Jext);
 
         for (size_t m = 0; m < sim.morphs.size(); m++)
-            if (sim.morphs[m].mesh == &sim.cloths[c].mesh)
-                add_morph_forces(sim.cloths[c], sim.morphs[m], sim.time,
+            if (sim.morphs[m].mesh == &sim.cloths[c]->mesh)
+                add_morph_forces(*sim.cloths[c], sim.morphs[m], sim.time,
                                  sim.step_time, fext, Jext);
         vector<Vec3> dv = implicit_update(mesh.nodes, mesh.edges, mesh.faces, 
                                           fext, Jext, cons, sim.step_time);
@@ -257,8 +257,8 @@ void plasticity_step (Simulation &sim) {
         return;
     sim.timers[plasticity].tick();
     for (int c = 0; c < (int)sim.cloths.size(); c++) {
-        plastic_update(sim.cloths[c]);
-        optimize_plastic_embedding(sim.cloths[c]);
+        plastic_update(*sim.cloths[c]);
+        optimize_plastic_embedding(*sim.cloths[c]);
     }
     sim.timers[plasticity].tock();
 }
@@ -281,10 +281,10 @@ void equilibration_step (Simulation &sim) {
     // double stiff = 1;
     // swap(stiff, ::magic.handle_stiffness);
     for (int c = 0; c < (int)sim.cloths.size(); c++) {
-        Mesh &mesh = sim.cloths[c].mesh;
+        Mesh &mesh = sim.cloths[c]->mesh;
         for (int n = 0; n < (int)mesh.nodes.size(); n++)
             mesh.nodes[n]->acceleration = Vec3(0);
-        apply_pop_filter(sim.cloths[c], cons, 1);
+        apply_pop_filter(*sim.cloths[c], cons, 1);
     }
     // swap(stiff, ::magic.handle_stiffness);
     sim.timers[remeshing].tock();
@@ -336,12 +336,12 @@ void remeshing_step (Simulation &sim, bool initializing) {
     sim.timers[remeshing].tick();
     for (size_t c = 0; c < sim.cloths.size(); c++) {
         if (::magic.fixed_high_res_mesh)
-            static_remesh(sim.cloths[c].mesh);
+            static_remesh(sim.cloths[c]->mesh);
         else {
         	vector<AccelStruct*> obs_accs = create_accel_structs(sim.obstacle_meshes, false);
-            map<Node*,Plane> planes = nearest_obstacle_planes(sim.cloths[c].mesh.nodes, obs_accs);
+            map<Node*,Plane> planes = nearest_obstacle_planes(sim.cloths[c]->mesh.nodes, obs_accs);
             destroy_accel_structs(obs_accs);
-            dynamic_remesh(sim.cloths[c].mesh, planes);
+            dynamic_remesh(sim.cloths[c]->mesh, planes);
         }
     }
     sim.timers[remeshing].tock();
@@ -349,7 +349,7 @@ void remeshing_step (Simulation &sim, bool initializing) {
     // breaking
     if (sim.enabled[fracture] && sim.frame > 1) {
     	for (size_t c = 0; c < sim.cloths.size(); c++) {
-    		perform_breaking(sim.cloths[c].mesh);
+    		perform_breaking(sim.cloths[c]->mesh);
     	}
     	consistency("breaking");
     }
@@ -367,7 +367,7 @@ void remeshing_step (Simulation &sim, bool initializing) {
         sim.timers[popfilter].tick();
         vector<Constraint*> cons = get_constraints(sim, true);
         for (size_t c = 0; c < sim.cloths.size(); c++)
-            apply_pop_filter(sim.cloths[c], cons);
+            apply_pop_filter(*sim.cloths[c], cons);
         delete_constraints(cons);
         sim.timers[popfilter].tock();
     }    

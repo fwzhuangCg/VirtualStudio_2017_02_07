@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -37,7 +37,7 @@ struct StrainLimit {
     double min, max;
 };
 
-std::vector<StrainLimit> get_strain_limits (const std::vector<SimCloth> &cloths);
+std::vector<StrainLimit> get_strain_limits (const std::vector<SimCloth*> &cloths);
 
 void strain_limiting (std::vector<Mesh*> &meshes,
                       const std::vector<StrainLimit> &strain_limits,

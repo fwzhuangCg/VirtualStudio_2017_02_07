@@ -4,6 +4,7 @@
 #include "simulation\io.h"
 #include "simulation\magic.h"
 #include "simulation\simulation.h"
+#include "simulation\collisionutil.h"
 #include "triangulate.h"
 #include <assert.h>
 #include <QProgressDialog>
@@ -94,7 +95,8 @@ void ClothHandler::update_avatars_to_handler(DoubleDataBuffer position)
 // used to import obj cloth file
 void ClothHandler::add_clothes_to_handler(const char * filename)
 {
-	SmtClothPtr cloth(new SimCloth);
+	sim_->cloths.resize(sim_->cloths.size() + 1);
+	SimCloth *cloth = sim_->cloths.back();
 	load_obj(cloth->mesh, filename);
 
 	std::fstream fs("parameters/parameter.txt");
@@ -195,15 +197,13 @@ void ClothHandler::add_clothes_to_handler(const char * filename)
 	fs >> tab >> cloth->remeshing.aspect_min;
 
 	fs.close();
-	// save to simulation
-	sim_->cloths.push_back(*cloth);
 }
 
 void ClothHandler::transform_cloth(const float * transform, size_t clothIndex)
 {
 	if(sim_->cloths.empty())
 		return;
-	SimCloth * cloth = &sim_->cloths[clothIndex];
+	SimCloth * cloth = sim_->cloths[clothIndex];
 
 	Transformation trans;
 	trans.translation = Vec3(transform[0], transform[1], transform[2]);// edit
@@ -223,7 +223,7 @@ void ClothHandler::update_buffer()
 	position_buffer_.clear();
 	normal_buffer_.clear();
 	texcoord_buffer_.clear();
-	Mesh & mesh = sim_->cloths[0].mesh;
+	Mesh & mesh = sim_->cloths[0]->mesh;
 	for(auto face_it = mesh.faces.begin(); face_it != mesh.faces.end(); ++face_it)
 	{
 		Face * face = *face_it;
@@ -286,9 +286,9 @@ void ClothHandler::init_simulation()
 	bool has_strain_limits = false, has_plasticity = false, has_fracture = false;
 	for (int c = 0; c < sim_->cloths.size(); c++)
 	{
-		for (int m = 0; m < sim_->cloths[c].materials.size(); m++) 
+		for (int m = 0; m < sim_->cloths[c]->materials.size(); m++) 
 		{
-			SimMaterial *mat = sim_->cloths[c].materials[m];
+			SimMaterial *mat = sim_->cloths[c]->materials[m];
 			if (mat->strain_min != infinity || mat->strain_max != infinity)
 				has_strain_limits = true;
 			if (mat->yield_curv != infinity)
@@ -326,6 +326,8 @@ bool ClothHandler::begin_simulate()
 	clothes_frame_.resize(clothes_.size());
 	init_simulation();
 	prepare(*sim_);
+	::meshes = &sim_->cloth_meshes;
+	::obs_meshes = &sim_->obstacle_meshes;
 	separate_obstacles(sim_->obstacle_meshes, sim_->cloth_meshes);
 	return relax_initial_state(*sim_);
 }
@@ -422,7 +424,7 @@ void ClothHandler::write_frame(int frame)
 	for(size_t i = 0; i < clothes_.size(); i++)
 	{
 		SmtClothPtr copy_cloth(new SimCloth);
-		copy_cloth->mesh = deep_copy(clothes_[i].mesh);
+		copy_cloth->mesh = deep_copy(clothes_[i]->mesh);
 		clothes_frame_[i].push_back(copy_cloth);
 	}
 }
@@ -443,7 +445,7 @@ void ClothHandler::apply_velocity(Mesh &mesh, const Velocity &vel)
 		mesh.nodes[n]->v = vel.v + cross(vel.w, mesh.nodes[n]->x - vel.o);
 }
 
-size_t ClothHandler::face_count() { return sim_->cloths[0].mesh.faces.size(); }
+size_t ClothHandler::face_count() { return sim_->cloths[0]->mesh.faces.size(); }
 
 size_t ClothHandler::cloth_num() { return clothes_.size(); }
 
@@ -452,7 +454,7 @@ void ClothHandler::load_frame(int frame)
 	if(frame > static_cast<int>(clothes_frame_[0].size()) - 1)
 		frame = static_cast<int>(clothes_frame_[0].size()) - 1;
 	for(size_t i = 0; i < sim_->cloths.size(); ++i)
-		clothes_[i].mesh = clothes_frame_[i][frame]->mesh;
+		clothes_[i]->mesh = clothes_frame_[i][frame]->mesh;
 }
 
 void ClothHandler::init_cloth(SimCloth &cloth)

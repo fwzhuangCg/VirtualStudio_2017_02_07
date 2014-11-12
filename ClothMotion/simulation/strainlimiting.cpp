@@ -34,10 +34,10 @@
 using namespace std;
 
 
-vector<StrainLimit> get_strain_limits (const vector<SimCloth> &cloths) {
+vector<StrainLimit> get_strain_limits (const vector<SimCloth*> &cloths) {
     vector<StrainLimit> strain_limits;
     for (int c = 0; c < (int)cloths.size(); c++) {
-        const SimCloth &cloth = cloths[c];
+        const SimCloth &cloth = *cloths[c];
         const Mesh &mesh = cloth.mesh;
         int f0 = strain_limits.size();
         strain_limits.resize(strain_limits.size() + cloth.mesh.faces.size());

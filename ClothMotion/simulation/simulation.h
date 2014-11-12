@@ -47,7 +47,7 @@ struct Simulation {
     // variables
     double time;
     int frame, step;
-    std::vector<SimCloth> cloths;
+    std::vector<SimCloth*> cloths;
     // constants
     int frame_steps, save_every;
     double frame_time, step_time;
