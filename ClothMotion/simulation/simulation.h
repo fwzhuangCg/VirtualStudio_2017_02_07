@@ -67,6 +67,7 @@ struct Simulation {
     // handy pointers
     std::vector<Mesh*> cloth_meshes, obstacle_meshes;
 };
+
 extern Simulation sim;
 
 void prepare (Simulation &sim);

@@ -3,6 +3,7 @@
 #include "simulation\separateobs.h"
 #include "simulation\io.h"
 #include "simulation\magic.h"
+#include "simulation\simulation.h"
 #include "triangulate.h"
 #include <assert.h>
 #include <QProgressDialog>
@@ -14,7 +15,7 @@ struct Velocity
 	Vec3 v, w, o; 
 };
 
-ClothHandler::ClothHandler() : frame_(0), sim_(new Simulation), fps_(new Timer), clothes_(sim_->cloths) {}
+ClothHandler::ClothHandler() : frame_(0), sim_(&sim), fps_(new Timer), clothes_(sim_->cloths) {}
 
 const double ClothHandler::shrinkFactor = 1.f;
 
@@ -321,6 +322,7 @@ bool ClothHandler::begin_simulate()
 	clothes_frame_.resize(clothes_.size());
 	init_simulation();
 	prepare(*sim_);
+	separate_obstacles(sim_->obstacle_meshes, sim_->cloth_meshes);
 	return relax_initial_state(*sim_);
 }
 

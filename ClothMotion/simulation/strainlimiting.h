@@ -1,4 +1,4 @@
-﻿/*
+/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -31,12 +31,16 @@
 #include "constraint.h"
 #include <memory>
 
-typedef std::tr1::shared_ptr<SimCloth> SmtClothPtr;
+struct StrainLimit {
+    StrainLimit() : min(1), max(1) {}
+    StrainLimit(double min, double max) : min(min), max(max) {}
+    double min, max;
+};
 
-std::vector<Vec2> get_strain_limits (const std::vector<SmtClothPtr> &cloths);
+std::vector<StrainLimit> get_strain_limits (const std::vector<SimCloth> &cloths);
 
 void strain_limiting (std::vector<Mesh*> &meshes,
-                      const std::vector<Vec2> &strain_limits,
+                      const std::vector<StrainLimit> &strain_limits,
                       const std::vector<Constraint*> &cons);
 
 #endif

@@ -27,7 +27,6 @@
 #include "util.h"
 #include "mesh.h"
 #include <algorithm>
-#include <cstdarg>
 #include <cstdio>
 #include <iomanip>
 #include <limits>
@@ -35,6 +34,7 @@
 #include <signal.h>
 #include <sstream>
 #include <cstdio>
+
 
 using namespace std;
 
@@ -65,15 +65,6 @@ ostream &operator<< (ostream &out, const Stats &stats) {
             << stats.quantile(0.75) << " " << stats.quantile(0.95) << " "
             << stats.max();
     return out;
-}
-
-inline string stringf (const string &format, ...) {
-    char buf[256];
-    va_list args;
-    va_start(args, format);
-    vsnprintf(buf, 256, format.c_str(), args);
-    va_end(args);
-    return std::string(buf);
 }
 
 template <typename T> string name (const T *p) {

@@ -36,6 +36,7 @@
 //#include <zlib.h>
 #include <map>
 #include <vector>
+#include <cstdarg>
 
 #define EPSILON		1e-7f
 #define M_PI       3.14159265358979323846
@@ -45,6 +46,8 @@
 #define PREV(i) ((i)>0 ? (i)-1 : (i)+2)
 #undef min
 #undef max
+
+using namespace std;
 
 typedef unsigned int uint;
 
@@ -66,7 +69,14 @@ std::ostream &operator<< (std::ostream &out, const Stats &stats);
 
 // sprintf for std::strings
 
-std::string stringf (const std::string &format, ...);
+inline string stringf (const string &format, ...) {
+    char buf[256];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buf, 256, format.c_str(), args);
+    va_end(args);
+    return std::string(buf);
+}
 
 // Easy reporting of vertices and faces
 

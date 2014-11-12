@@ -42,6 +42,8 @@
 #include <fstream>
 using namespace std;
 
+Simulation sim;
+
 bool consistency_check = false;
 
 static const bool verbose = false;

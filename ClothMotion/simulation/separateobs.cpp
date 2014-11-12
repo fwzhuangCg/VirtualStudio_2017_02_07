@@ -1,4 +1,4 @@
-/*
+﻿/*
   Copyright ©2013 The Regents of the University of California
   (Regents). All Rights Reserved. Permission to use, copy, modify, and
   distribute this software and its documentation for educational,
@@ -74,6 +74,9 @@ void build_face_normal_lookup(map<const Face*,Vec3>& nmap, const vector<Mesh*>& 
 bool separate_obstacles (vector<Mesh*> &obs_meshes,
                          const vector<Mesh*> &meshes) {
     
+	::meshes = &meshes;
+	::obs_meshes = &obs_meshes;
+
     SO::xold.clear();
     SO::nold.clear();
     build_node_lookup(SO::xold, obs_meshes);

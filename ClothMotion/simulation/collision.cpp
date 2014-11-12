@@ -177,10 +177,10 @@ void update_active (const vector<AccelStruct*> &accs,
 
             if (acc==0)
                 {/* Annotation::add((Node*)node); wait_key();*/}
-
-            for (int v = 0; v < (int)node->verts.size(); v++)
-                for (int f = 0; f < (int)node->verts[v]->adjf.size(); f++)
-                    mark_active(*acc, node->verts[v]->adjf[f]);
+			else
+				for (int v = 0; v < (int)node->verts.size(); v++)
+					for (int f = 0; f < (int)node->verts[v]->adjf.size(); f++)
+						mark_active(*acc, node->verts[v]->adjf[f]);
         }
     }
 }

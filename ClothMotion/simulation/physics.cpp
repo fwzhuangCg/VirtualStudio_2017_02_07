@@ -144,7 +144,7 @@ pair<Mat9x9,Vec9> stretching_force (const Face *face) {
     } else {
         double gf = -face->a * mat->alt_stretching;
         //Vec9 d_trace = 0.5 * (DD[0].t()*DD[0]+DD[1].t()*DD[1]+DD[2].t()*DD[2]) * X;
-        Mat3x3 Gc = max(G,Mat3x3(0)); // posdef
+        Mat3x3 Gc = matmax(G,Mat3x3(0)); // posdef
         for (int i=0; i<3; i++)
             for(int j=0; j<=i; j++) {
                 Vec9 dG = 0.5 * (DD[i].t()*f[j] + DD[j].t()*f[i]);

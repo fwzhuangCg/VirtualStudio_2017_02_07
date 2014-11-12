@@ -67,7 +67,7 @@ private:
 	static void init_cloth(SimCloth &cloth);
 	static void apply_velocity(Mesh &mesh, const Velocity &vel);
 
-	std::tr1::shared_ptr<Simulation> sim_;
+	Simulation *sim_;
 	int frame_;
 	std::tr1::shared_ptr<Timer> fps_;
 	std::vector<SimCloth> & clothes_;

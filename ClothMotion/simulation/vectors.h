@@ -178,7 +178,7 @@ tpl T inner (const MatmnT &a, const MatmnT& b) { T r=0; for (int j=0; j<n; j++) 
 tpl std::ostream &operator<< (std::ostream &out, const MatmnT &A) {MatnmT At = transpose(A); out << "(" << std::endl; for (int i = 0; i < m; i++) out << "    " << At.col(i) << (i+1==m?"":",") << std::endl; out << ")"; return out;}
 inline Mat<2,2> reduce_xy (const Mat<3,3>& M) { return Mat<2,2> (Vec2(M(0,0),M(0,1)),Vec2(M(1,0),M(1,1))); }
 inline Mat<3,3> expand_xy (const Mat<2,2>& M) { return Mat<3,3> (Vec3(M(0,0),M(0,1),0),Vec3(M(1,0),M(1,1),0),Vec3(0,0,0)); }
-tpl MatmnT max (const MatmnT& a, const MatmnT& b) { MatmnT c; for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) c(i,j) = std::max(a(i,j), b(i,j)); return c; }
+tpl MatmnT matmax (const MatmnT& a, const MatmnT& b) { MatmnT c; for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) c(i,j) = std::max(a(i,j), b(i,j)); return c; }
 
 // Frobenius norm
 tpl T norm2_F (const MatmnT &A) {T a = 0; for (int j = 0; j < n; j++) a += norm2(A.col(j)); return a;}
