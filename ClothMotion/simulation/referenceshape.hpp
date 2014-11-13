@@ -3,6 +3,8 @@
 
 #include "mesh.h"
 
+void reproject_all(Mesh& mesh);
+
 class ReferenceShape {
 public:
     virtual Vec3 closest_point (const Vec3& p) = 0;

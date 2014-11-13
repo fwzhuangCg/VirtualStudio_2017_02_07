@@ -58,3 +58,10 @@ Vec3 ReferenceMesh::closest_point(const Vec3& p) {
 bool ReferenceMesh::raycast(Vec3& p, const Vec3& dir) {
     return false;
 }
+
+void reproject_all(Mesh& mesh) {
+    for (size_t i=0; i<mesh.verts.size(); i++) {
+        Vert* vert = mesh.verts[i];
+        vert->u = mesh.ref->closest_point(vert->u);
+    }
+}

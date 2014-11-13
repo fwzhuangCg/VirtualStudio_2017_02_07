@@ -5,6 +5,7 @@
 #include "simulation\magic.h"
 #include "simulation\simulation.h"
 #include "simulation\collisionutil.h"
+#include "simulation\referenceshape.hpp"
 #include "triangulate.h"
 #include <assert.h>
 #include <QProgressDialog>
@@ -555,6 +556,9 @@ void ClothHandler::init_cloth(SimCloth &cloth)
 	fs >> tab >> cloth.remeshing.size_min;
 	fs >> tab >> cloth.remeshing.size_max;
 	fs >> tab >> cloth.remeshing.aspect_min;
+
+	cloth.mesh.ref = new ReferenceLinear(cloth.mesh);
+    reproject_all(cloth.mesh);
 
 	fs.close();
 }
