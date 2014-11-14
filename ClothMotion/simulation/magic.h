@@ -41,7 +41,7 @@ struct Magic {
     double separation_step_size;
     int relax_method, max_cracks;
     Magic ():
-        fixed_high_res_mesh(false),
+        fixed_high_res_mesh(true),
         handle_stiffness(1e3),
         collision_stiffness(1e9),
         repulsion_thickness(1e-3),

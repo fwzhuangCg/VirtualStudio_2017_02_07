@@ -61,7 +61,7 @@ void static_remesh (Mesh& mesh) {
         mesh.verts[i]->sizing = Mat3x3(1.f/sq(mesh.parent->remeshing.size_min));
     }
     vector<Edge*> active_edges = mesh.edges;
-    while (split_worst_edge(0, active_edges));
+    while (split_worst_edge(0, active_edges)) active_edges = mesh.edges;
     vector<Face*> active_faces = mesh.faces;
     while (improve_some_face(0, active_faces));
     compute_ms_data(mesh);
