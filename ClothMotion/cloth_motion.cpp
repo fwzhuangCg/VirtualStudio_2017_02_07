@@ -256,11 +256,14 @@ void ClothHandler::init_simulation()
 	std::fstream fs("parameters/simulation_parameter.txt");
 	assert(fs.is_open());
 
+	sim_->save_every = 1;
+
 	// init time frame
 	std::string label;
 	fs >> label >> sim_->frame_time;
 	fs >> label >> sim_->frame_steps;
 	sim_->step_time = sim_->frame_time / sim_->frame_steps;
+	sim_->passive_time = 1e10;
 	sim_->time = 0.0f;
 
 	// init gravity
@@ -284,32 +287,15 @@ void ClothHandler::init_simulation()
 	fs >> label >> magic.collision_stiffness;
 
 	// functional ability
-	bool has_strain_limits = false, has_plasticity = false, has_fracture = false;
-	for (int c = 0; c < sim_->cloths.size(); c++)
-	{
-		for (int m = 0; m < sim_->cloths[c]->materials.size(); m++) 
-		{
-			SimMaterial *mat = sim_->cloths[c]->materials[m];
-			if (mat->strain_min != infinity || mat->strain_max != infinity)
-				has_strain_limits = true;
-			if (mat->yield_curv != infinity)
-				has_plasticity = true;
-			if (mat->toughness > 0)
-            	has_fracture = true;
-		}
-	}
 	sim_->enabled[Simulation::Proximity] = true;
 	sim_->enabled[Simulation::Physics] = true;
+	sim_->enabled[Simulation::StrainLimiting] = true;
 	sim_->enabled[Simulation::Collision] = true;
 	sim_->enabled[Simulation::Remeshing] = true;
 	sim_->enabled[Simulation::Separation] = true;
-	sim_->enabled[Simulation::PopFilter] = true;
-	if (!has_strain_limits)
-		sim_->enabled[Simulation::StrainLimiting] = false;
-	if (!has_plasticity)
-		sim_->enabled[Simulation::Plasticity] = false;
-	if (!has_fracture)
-    	sim.enabled[Simulation::Fracture] = false;
+	sim_->enabled[Simulation::PopFilter] = false;
+	sim_->enabled[Simulation::Plasticity] = false;
+    sim_->enabled[Simulation::Fracture] = false;
 
 	fs.close();
 }
@@ -489,6 +475,7 @@ void ClothHandler::init_cloth(SimCloth &cloth)
 	// init material
 	std::string mat_file;
 	SimMaterial *material = new SimMaterial;
+	material->use_dde = true;
 	fs >> tab >> mat_file;
 	mat_file = "material/" + mat_file + ".txt";
 	std::fstream matfs(mat_file);
@@ -556,6 +543,18 @@ void ClothHandler::init_cloth(SimCloth &cloth)
 	fs >> tab >> cloth.remeshing.size_min;
 	fs >> tab >> cloth.remeshing.size_max;
 	fs >> tab >> cloth.remeshing.aspect_min;
+	cloth.remeshing.size_uniform = infinity;
+	cloth.remeshing.refine_fracture = infinity;
+
+	// ohter
+	for(size_t i = 0; i < cloth.materials.size(); ++i) 
+	{
+		if(cloth.materials[i]->use_dde)
+		{
+			reorient_MS(cloth.mesh);
+			break;
+		}
+	}
 
 	cloth.mesh.ref = new ReferenceLinear(cloth.mesh);
     reproject_all(cloth.mesh);

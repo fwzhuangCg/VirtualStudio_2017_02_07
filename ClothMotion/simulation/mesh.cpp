@@ -467,3 +467,15 @@ void delete_mesh (Mesh &mesh) {
     mesh.proxy = 0;
 }
 
+void reorient_MS(Mesh& mesh) {
+    Plane plane = plane_fit<MS>(mesh);
+    Mat3x3 M = local_base(plane.n);
+    for (size_t i=0; i<mesh.verts.size(); i++) {
+        mesh.verts[i]->u = M * (mesh.verts[i]->u - plane.x0) + plane.x0;
+        if (fabs(mesh.verts[i]->u[2]) > 1e-4) {
+            cout << "error: DDE materials only support planar rest shapes." << endl;
+            exit(1);
+        }
+    }
+}
+

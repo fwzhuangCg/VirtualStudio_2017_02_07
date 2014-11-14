@@ -221,6 +221,7 @@ void update_x0 (Mesh &mesh);
 
 Mesh deep_copy (Mesh &mesh);
 void delete_mesh (Mesh &mesh);
+void reorient_MS(Mesh& mesh);
 
 void activate_nodes(std::vector<Node*>& nodes);
 void deactivate_nodes(std::vector<Node*>& nodes);

@@ -10,4 +10,6 @@ x64/
 *.swp
 VirtualStudio.opensdf
 ipch/
+models/
 ClothMotion/simulation/src
+*~
