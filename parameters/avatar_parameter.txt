@@ -1,0 +1,4 @@
+scale_factor_ 0.09
+xtranslate_ 0.0
+ytranslate_ 0.0
+ztranslate_ 0.0

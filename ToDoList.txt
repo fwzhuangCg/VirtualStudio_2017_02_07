@@ -1,0 +1,3 @@
+@ 修改fixed_high_res_mesh，试试看static_remesh的效果
+@ 删掉remesh_step中的separate步骤，看看效果
+@ 修改读入obj的模块，增加预处理

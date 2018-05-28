@@ -1,0 +1,18 @@
+translation 0.0 1.2 -0.3
+scale 1.0
+rotation -90.0 1.0 0.0 0.0
+material gray-interlock
+density_mult 1.0
+stretching_mult 1.0
+bending_mult 1.0
+thicken 1.0
+damping 0.0
+strain_min 0.95
+strain_max 1.95
+weakening 0.0
+refine_angle 0.3
+refine_compression 0.01
+refine_velocity 0.5
+size_min 0.01
+size_max 0.2
+aspect_min 0.2

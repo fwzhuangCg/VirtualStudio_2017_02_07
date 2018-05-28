@@ -1,0 +1,61 @@
+Declare "Kd" "float"
+Declare "Ks" "float"
+Declare "index" "float"
+Declare "Kr" "float"
+Declare "Kt" "float"
+Declare "roughness" "float"
+Declare "texturename" "string"
+
+Declare "intensity" "float"
+Declare "lightcolor" "color"
+Declare "from" "point"
+Declare "to" "point"
+
+Declare "fov" "float"
+
+Declare "uv" "vertex float[2]"
+
+Format 300 300 1
+PixelSamples 1 1
+
+Display "quads.tif" "file" "rgb"
+
+# samplesegmentlength is the length of each segment region to take a sample
+# from--this obviously depends on the given scene, and I doubt 1. is a good
+# one for this scene
+SurfaceIntegrator "fur" "integer maxdepth" [5] "float samplesegmentlength" [.01]
+
+Projection "perspective" "fov" 14
+
+LightSource "pointlight" 1 "intensity" 17.0 "from" [ 0 2 0 ] "lightcolor" [ 1 1 1 ]
+
+# reverse the orientation from lh to rh
+Scale 1 -1 1
+# which way is up
+Rotate  288  0 0 1
+Rotate  137  1 0 0
+Rotate  155  0 1 0
+Rotate   90  0 0 1
+# move world origin away from camera
+Translate  4 -2  4
+
+WorldBegin
+
+TransformBegin
+
+Surface "fur" "string texels" "furs/texturefur.tex" "string texturename" ["textures/leopardfur4.tiff"] "float normalscale" 0.4
+#Surface "plastic" "string texturename" ["textures/grid.tiff"] "float Ks" [0]
+Polygon "P" [ -0.5 0 -0.5  -0.5 0  0.5   0.5 0  0.5   0.5 0 -0.5 ] "N" [ 2 1 -0.2  2 1 0.2  2 1 -0.3  2 1 0.1 ] "uv" [ 0 0  0.15 0  0.15 0.15  0 0.15 ]
+#Polygon "P" [ -0.5 0  0.5   0.5 0  0.5   0.5 0 -0.5 ] "N" [ 0 1 0  0 1 0  0 1 0 ] "uv" [ 0.15 0  0.15 0.15  0 0.15 ]
+#Polygon "P" [ -0.5 0 -0.5  -0.5 0  0.5  0.5 0 -0.5 ] "N" [ 0 1 0  0 1 0  0 1 0 ] "uv" [ 0 0  0.15 0  0 0.15 ]
+
+TransformEnd
+
+#TransformBegin
+#Surface "matte"
+#Scale 10 10 10
+#Color [ 0 0 1 ]
+#Sphere 1 -1 1 360
+#TransformEnd
+
+WorldEnd

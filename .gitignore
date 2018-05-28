@@ -1,0 +1,15 @@
+*.sdf
+*.obj
+*.exe
+GeneratedFiles/
+Debug/
+Release/
+x64/
+^moc*.cpp$
+*.tlog
+*.swp
+VirtualStudio.opensdf
+ipch/
+models/
+ClothMotion/simulation/src
+*~
