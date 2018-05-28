@@ -1,0 +1,54 @@
+Declare "Kd" "float"
+Declare "Ks" "float"
+Declare "index" "float"
+Declare "Kr" "float"
+Declare "Kt" "float"
+Declare "roughness" "float"
+Declare "texturename" "string"
+
+Declare "intensity" "float"
+Declare "lightcolor" "color"
+Declare "from" "point"
+Declare "to" "point"
+
+Declare "fov" "float"
+
+Format 600 600 1
+PixelSamples 1 1
+
+Display "quads.tif" "file" "rgb"
+
+# samplesegmentlength is the length of each segment region to take a sample
+# from--this obviously depends on the given scene, and I doubt 1. is a good
+# one for this scene
+SurfaceIntegrator "fur" "integer maxdepth" [5] "float samplesegmentlength" [.1]
+
+Projection "perspective" "fov" 20
+
+LightSource "pointlight" 1 "intensity" 8.0 "from" [ 0 3 0 ] "lightcolor" [ 1 1 1 ]
+
+Scale 1 1 1
+# which way is up
+#Rotate   45  0 0 1
+# get camera looking in -y direction, x pointing right
+Rotate    0  1 0 0
+Rotate  180  0 1 0
+#Rotate   90  0 0 1
+# look toward origin from translated camera position
+Rotate   24  1 0 0
+# define camera position
+Translate 0 -2 -4
+#Clipping 0.01 20.0
+
+WorldBegin
+
+TransformBegin
+ConcatTransform  [ 1 0 0 0   0 1 0 0   0 0 1 0   0 0 0 1 ]
+Surface "fur" "string texels" "furs/generic.tex"
+
+Color [ 1 1 1 ]
+Polygon "P" [ -0.5 0 -0.5  -0.5 0  0.5   0.5 0  0.5   0.5 0 -0.5 ] "N" [ 0 1 0  0 1 0  0 1 0  0 1 0 ]
+Polygon "P" [ -0.7 0 -0.7  -0.7 0 -0.5  -0.5 0 -0.5  -0.5 0 -0.7 ] "N" [ 0 1 0  0 1 0  0 1 0  0 1 0 ]
+TransformEnd
+
+WorldEnd

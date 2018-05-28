@@ -1,0 +1,15 @@
+Declare "Kd" "float"
+Declare "Ks" "float"
+Declare "index" "float"
+Declare "Kr" "float"
+Declare "Kt" "float"
+Declare "roughness" "float"
+Declare "texturename" "string"
+
+Declare "intensity" "float"
+Declare "lightcolor" "color"
+Declare "from" "point"
+Declare "to" "point"
+
+Declare "fov" "float"
+
